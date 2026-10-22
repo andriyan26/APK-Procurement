@@ -51,16 +51,12 @@ flowchart LR
 
 ---
 
-## 2. Pemenuhan Soal 1: Analisis (BPMN Swimlane & WBS Excel)
+## 2. Kepatuhan Spesifikasi Soal Ujian (Take Home Test)
 
-Sesuai instruksi pada lembar soal (*Take Home Programming Test - Software Engineer* Cineul Technologies), berkas analisis resmi telah disertakan lengkap pada direktori `docs/`:
-
-1. **Soal 1a &bull; Swimlane BPMN (Business Process Model and Notation):**
-   - **Berkas Visual Draw.io:** [`docs/SOAL_1A_BPMN_SWIMLANE.drawio`](docs/SOAL_1A_BPMN_SWIMLANE.drawio) *(Dapat dibuka langsung di [app.diagrams.net](https://app.diagrams.net) dan diekspor ke PDF/PNG)*.
-   - **Dokumentasi & Diagram Mermaid:** [`docs/DOKUMENTASI_SOAL_1A_DAN_1B.md`](docs/DOKUMENTASI_SOAL_1A_DAN_1B.md) *(5 Swimlane Roles: Requester, Approver, Purchasing, Vendor Rekanan, & Warehouse)*.
-2. **Soal 1b &bull; Work Breakdown Structure (WBS Modul & Fitur):**
-   - **Berkas Spreadsheet Resmi Excel:** [`docs/SOAL_1B_WBS_PROCUREMENT.xlsx`](docs/SOAL_1B_WBS_PROCUREMENT.xlsx) *(Lengkap dengan styling korporat, header navy blue, zebra banding, dan hirarki Level 1 s/d Level 3)*.
-   - **Berkas CSV Data:** [`docs/SOAL_1B_WBS_PROCUREMENT.csv`](docs/SOAL_1B_WBS_PROCUREMENT.csv).
+Repositori ini ditujukan khusus untuk pemenuhan **Soal 2 — Programming (Web App Python + SQLite)** sesuai ketentuan lembar soal Cineul Technologies:
+- **Soal 1a (Swimlane BPMN):** Dibuat menggunakan draw.io dan dikonversi menjadi dokumen PDF resmi terpisah.
+- **Soal 1b (Work Breakdown Structure):** Disusun dalam berkas spreadsheet Excel (.xlsx) resmi terpisah.
+- **Soal 2 (Web Application):** Repositori GitHub mandiri tunggal (*Single Repository*) berisi seluruh source code aplikasi pengadaan berbasis Python Flask, SQLite relasional, antarmuka Bootstrap 5 responsif, dan dukungan AI Vision Suite.
 
 ---
 
@@ -141,15 +137,10 @@ APK-Procurement/
 ├── models.py                   # Definisi model SQLAlchemy & skema foreign keys
 ├── database.py                 # Konfigurasi koneksi SQLite & integrasi PRAGMA
 ├── seed.py                     # Script database seeder data awal dan sampel transaksi
-├── requirements.txt            # Dependensi pustaka Python (Flask, SQLAlchemy, openpyxl)
+├── requirements.txt            # Dependensi pustaka Python
 ├── run.bat                     # Runner otomatis (1-klik start server)
 ├── .gitignore                  # Berkas pengecualian Git
 ├── README.md                   # Dokumentasi teknis & panduan lengkap
-├── docs/                       # Berkas Resmi Pemenuhan Soal 1a & Soal 1b Ujian
-│   ├── SOAL_1A_BPMN_SWIMLANE.drawio  # File XML Draw.io Swimlane 5-Role (Siap Export PDF)
-│   ├── SOAL_1B_WBS_PROCUREMENT.xlsx  # Spreadsheet Resmi WBS Modul & Fitur (Excel)
-│   ├── SOAL_1B_WBS_PROCUREMENT.csv   # Data WBS tabular format CSV
-│   └── DOKUMENTASI_SOAL_1A_DAN_1B.md # Narasi analisis, batasan scope & diagram Mermaid
 ├── static/
 │   ├── css/
 │   │   └── style.css           # Design system, variables, KPI cards, kop surat & print layout
