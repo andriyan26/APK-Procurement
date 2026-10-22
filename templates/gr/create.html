@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+
+{% block title %}Pencatatan Goods Receipt (GR) - PROCURE-APP{% endblock %}
+{% block page_title %}Penerimaan Barang Gudang (Goods Receipt){% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 animate-reveal delay-1">
+        <!-- BREADCRUMB & HEADER -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a href="{{ url_for('gr_list') }}" class="text-decoration-none text-muted">Goods Receipt</a></li>
+                        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Pencatatan Fisik Baru</li>
+                    </ol>
+                </nav>
+                <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-box-arrow-in-down text-primary"></i>
+                    <span>Pencatatan Penerimaan Barang (Goods Receipt)</span>
+                </h4>
+                <p class="text-muted small mb-0">Verifikasi fisik barang yang tiba di gudang dan cocokkan dengan Purchase Order serta Surat Jalan vendor.</p>
+            </div>
+            <div>
+                <a href="{{ url_for('gr_list') }}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar GR
+                </a>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4 mb-4" style="border-radius: 16px;">
+            <!-- ============================================================
+                 KASUS 1: JIKA BELUM MEMILIH PO
+                 ============================================================ -->
+            {% if not selected_po %}
+            <div class="p-3">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Langkah 1</span>
+                    <h5 class="fw-bold mb-0 text-dark">Pilih Purchase Order (PO) yang Akan Diterima</h5>
+                </div>
+                <p class="text-muted small mb-4">Pilihlah salah satu nomor Purchase Order aktif di bawah ini untuk memulai proses verifikasi fisik barang di gudang:</p>
+                
+                <div class="row g-3">
+                    {% for opo in open_pos %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border p-3 shadow-sm hover-shadow transition-all" style="border-radius: 12px; background: #fafafa;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-primary fw-bold">{{ opo.po_number }}</span>
+                                {% if opo.status == 'Issued' %}
+                                    <span class="badge bg-info-subtle text-info-emphasis fw-bold">Issued</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning fw-bold">Partially Received</span>
+                                {% endif %}
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ opo.vendor_name }}">{{ opo.vendor_name }}</h6>
+                            <div class="small text-muted mb-2">
+                                <div><i class="bi bi-calendar-event me-1"></i>Tgl PO: {{ opo.po_date | format_date }}</div>
+                                <div><i class="bi bi-truck me-1"></i>Target Tiba: {{ opo.delivery_estimate_date | format_date }}</div>
+                                <div><i class="bi bi-box me-1"></i>Total Item: <strong>{{ opo.items|length }} Macam Barang</strong></div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+                                <div class="fw-bold text-primary">{{ opo.total_amount | format_currency }}</div>
+                                <a href="{{ url_for('gr_create', po_id=opo.id) }}" class="btn btn-sm btn-success px-3 fw-semibold shadow-sm" style="border-radius: 6px;">
+                                    Pilih PO Ini &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <div class="text-center py-5 text-muted bg-light rounded-3 border">
+                            <i class="bi bi-inbox fs-1 text-secondary d-block mb-2 opacity-50"></i>
+                            <h6 class="fw-bold text-dark">Tidak Ada PO yang Menunggu Kedatangan Fisik</h6>
+                            <p class="small text-muted mb-0">Semua Purchase Order yang diterbitkan telah selesai diterima seluruhnya di gudang.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+
+            <!-- ============================================================
+                 KASUS 2: FORM GOODS RECEIPT DENGAN PO TERPILIH
+                 ============================================================ -->
+            <form method="POST" action="{{ url_for('gr_create') }}" id="formGoodsReceipt">
+                <input type="hidden" name="po_id" value="{{ selected_po.id }}">
+
+                <!-- 1. KARTU REFERENSI PO ACUAN TERPILIH -->
+                <div class="card bg-light border p-3 mb-4" style="border-radius: 12px;">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 bg-primary text-white rounded-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                <i class="bi bi-receipt fs-4"></i>
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 0.72rem;">Purchase Order Acuan</span>
+                                    <span class="badge bg-secondary-subtle text-secondary fw-semibold" style="font-size: 0.72rem;">Status: {{ selected_po.status }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-dark">{{ selected_po.po_number }} &bull; Vendor: <span class="text-primary">{{ selected_po.vendor_name }}</span></h5>
+                                <div class="small text-muted d-flex flex-wrap gap-3 mt-1">
+                                    <span><i class="bi bi-cash me-1"></i>Total Nilai: <strong>{{ selected_po.total_amount | format_currency }}</strong></span>
+                                    <span><i class="bi bi-credit-card me-1"></i>Syarat Bayar: <strong>{{ selected_po.payment_terms }}</strong></span>
+                                    <span><i class="bi bi-calendar-check me-1"></i>Estimasi Tiba: <strong>{{ selected_po.delivery_estimate_date | format_date }}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('gr_create') }}" class="btn btn-sm btn-outline-secondary px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1" style="border-radius: 8px;">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <span>Ganti PO Acuan</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. FITUR NILAI PLUS: AI VISION SMART SCANNER SURAT JALAN -->
+                <div class="ai-scanner-card p-3 p-md-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="ai-badge-pulse">
+                                    <span class="ai-pulse-dot"></span>
+                                    <span>Fitur Nilai Plus</span>
+                                </span>
+                                <h6 class="fw-bold mb-0 text-primary d-flex align-items-center gap-1">
+                                    <i class="bi bi-stars"></i>
+                                    <span>AI Computer Vision: Smart Scanner Surat Jalan</span>
+                                </h6>
+                            </div>
+                            <small class="text-muted d-block">Unggah foto/scan surat jalan dari vendor untuk ekstraksi otomatis nomor DO & kondisi dokumen via OCR.</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="file" id="ai-scan-file" class="form-control form-control-sm bg-white" accept="image/*,.pdf" style="max-width: 220px;">
+                            <button type="button" id="btn-ai-scan" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                                <i class="bi bi-camera-fill me-1"></i>
+                                <span>Scan Dokumen dengan AI</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL SAMPEL CEPAT UNTUK PENGUJIAN INSTAN -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 pt-2 border-top border-indigo border-opacity-25 mt-2">
+                        <small class="text-muted fw-semibold me-1"><i class="bi bi-magic me-1"></i>Isi Otomatis Cepat:</small>
+                        <button type="button" class="quick-sample-chip" data-sample-do="SJ-SMI/2026/X/084" data-sample-notes="Paket diantar kurir armada PT Solusi Mitra Informatika. Kardus tertutup segel hologram resmi, kondisi barang utuh dan kering.">
+                            <i class="bi bi-building me-1 text-primary"></i>Contoh PT Solusi Mitra
+                        </button>
+                        <button type="button" class="quick-sample-chip" data-sample-do="DO/JNE-TRK/2026/8921" data-sample-notes="Diterima via JNE Trucking Cargo Plat B 9812 WX. Paket dalam palet kayu terbungkus plastik hitam tanpa cacat fisik.">
+                            <i class="bi bi-truck me-1 text-success"></i>Contoh JNE Cargo
+                        </button>
+                        <button type="button" class="quick-sample-chip" data-sample-do="SJ-EXP/2026/XI/4402" data-sample-notes="Pengiriman ekspedisi SiCepat Cargo. Tiba di gudang pukul 11:00 WIB, dokumen surat jalan rangkap 3 ditandatangani supir.">
+                            <i class="bi bi-box-seam me-1 text-warning"></i>Contoh Ekspedisi SiCepat
+                        </button>
+                    </div>
+
+                    <!-- PLACEHOLDER NOTIFIKASI HASIL AI -->
+                    <div id="ai-alert-placeholder" class="mt-2"></div>
+                </div>
+
+                <!-- 3. INFORMASI SURAT JALAN & DATA PENERIMAAN FISIK -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-check text-primary"></i>
+                        <span>Data Surat Jalan & Verifikasi Fisik</span>
+                    </h6>
+                    <span class="badge bg-light text-muted border small">* Kolom bertanda bintang wajib diisi</span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">
+                            Nomor Surat Jalan Vendor (Delivery Order) <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-hash"></i></span>
+                            <input type="text" name="delivery_order_number" id="delivery_order_number" class="form-control form-control-sm fw-bold text-dark" placeholder="Contoh: SJ-2026/XI/8892" required>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Sesuai nomor yang tertera pada lembar fisik surat jalan vendor.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">
+                            Tanggal Penerimaan Fisik di Gudang <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar3"></i></span>
+                            <input type="date" name="received_date" class="form-control form-control-sm fw-semibold" value="{{ today_str }}" required>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Waktu riil paket barang dibongkar & masuk gudang.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary mb-1">
+                            Petugas Penerima Gudang
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person-check-fill text-success"></i></span>
+                            <input type="text" class="form-control form-control-sm bg-light fw-bold text-dark" value="{{ current_user.full_name }} ({{ current_user.role }})" readonly>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Terotentikasi sebagai petugas gudang berwenang.</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-secondary mb-1">
+                            Catatan Penerimaan Gudang
+                        </label>
+                        <textarea name="notes" id="notes" class="form-control form-control-sm" rows="2" placeholder="Catatan kondisi paket ekspedisi, nama supir, nomor plat kendaraan pengantar, kondisi segel kardus, dll."></textarea>
+                        
+                        <!-- QUICK CHIPS UNTUK CATATAN GUDANG -->
+                        <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
+                            <small class="text-muted me-1" style="font-size: 0.72rem;">Klik tag untuk tambah catatan cepat:</small>
+                            <span class="quick-sample-chip note-chip" data-note="Segel kardus utuh dan aman">+ Segel Aman & Utuh</span>
+                            <span class="quick-sample-chip note-chip" data-note="Diterima langsung via kurir vendor">+ Kurir Vendor Langsung</span>
+                            <span class="quick-sample-chip note-chip" data-note="Ekspedisi truk box tertutup rapi">+ Truk Box Kering</span>
+                            <span class="quick-sample-chip note-chip" data-note="Fisik barang bersih tanpa cacat">+ Bebas Cacat Fisik</span>
+                            <span class="quick-sample-chip note-chip" data-note="Disertai kartu garansi resmi">+ Garansi Resmi Lengkap</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. TABEL CEK FISIK BARANG (ANTI-OVERFLOW & REAL-TIME TRACKER) -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-check2-square text-primary"></i>
+                        <span>Pemeriksaan Kuantitas & Kondisi Barang</span>
+                    </h6>
+                    <small class="text-muted">Periksa kuantitas dan kelayakan fisik setiap unit barang yang tiba.</small>
+                </div>
+
+                <!-- TOOLBAR LIVE SUMMARY & QUICK FILL -->
+                <div class="gr-inspection-toolbar">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small fw-semibold">Progres Penerimaan Fisik:</span>
+                            <span class="badge bg-primary fs-6 px-2 py-1" id="badge-qty-summary">
+                                <span id="summary-rec-count">0</span> / <span id="summary-po-count">0</span> Unit (<span id="summary-rec-percent">100%</span>)
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small fw-semibold">Prediksi Status GR:</span>
+                            <span id="status-predicted-badge" class="badge-status badge-approved">
+                                <i class="bi bi-check2-all me-1"></i>Lengkap (Complete)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success fw-semibold" id="btn-set-all-po" title="Set semua kuantitas diterima sama dengan Qty PO">
+                            <i class="bi bi-check-all me-1"></i>Set Semua 100% Sesuai PO
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" id="btn-set-all-good" title="Set semua kondisi fisik menjadi Baik">
+                            <i class="bi bi-shield-check me-1"></i>Set Semua Kondisi Baik
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TABEL FORM ITEM FISIK -->
+                <div class="table-responsive mb-4" style="border-radius: 12px; border: 1px solid #e2e8f0; overflow-x: auto;">
+                    <table class="table table-bordered table-custom table-gr-inspection align-middle mb-0" id="tableInspection">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 45px;">No</th>
+                                <th style="width: 22%; min-width: 170px;">Nama Barang</th>
+                                <th style="width: 23%; min-width: 170px;">Spesifikasi</th>
+                                <th class="text-center" style="width: 80px;">Qty PO</th>
+                                <th class="text-center" style="width: 75px;">Satuan</th>
+                                <th class="text-center" style="width: 110px;">Qty Diterima Saat Ini <span class="text-danger">*</span></th>
+                                <th style="width: 160px;">Kondisi Fisik Barang</th>
+                                <th style="min-width: 160px;">Catatan Item</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in selected_po.items %}
+                            <tr class="inspection-row" data-item-id="{{ item.id }}" data-qty-po="{{ item.quantity }}">
+                                <td class="text-center text-muted fw-bold">{{ loop.index }}</td>
+                                <td class="fw-semibold text-dark">{{ item.item_name }}</td>
+                                <td class="small text-muted">{{ item.specification or '-' }}</td>
+                                <td class="text-center fw-bold text-dark fs-6">{{ item.quantity }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">{{ item.unit }}</span>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" 
+                                               name="qty_received_{{ item.id }}" 
+                                               id="qty_received_{{ item.id }}" 
+                                               class="form-control form-control-sm text-center fw-bold text-primary input-qty-rec" 
+                                               value="{{ item.quantity }}" 
+                                               min="0" 
+                                               max="{{ item.quantity }}" 
+                                               required>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select name="condition_{{ item.id }}" class="form-select form-select-sm select-condition">
+                                        <option value="Baik" selected>Baik (Sesuai)</option>
+                                        <option value="Rusak">Rusak (Damaged)</option>
+                                        <option value="Tidak Sesuai">Tidak Sesuai Tipe</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" 
+                                           name="item_notes_{{ item.id }}" 
+                                           class="form-control form-control-sm" 
+                                           placeholder="Catatan segel / nomor seri">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SUBMIT GOODS RECEIPT BUTTONS -->
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                    <a href="{{ url_for('gr_list') }}" class="btn btn-light border px-4 fw-semibold" style="border-radius: 8px;">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </a>
+                    <button type="button" id="btnSubmitGR" class="btn btn-success px-4 py-2 shadow-sm fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                        <span>Simpan Dokumen Goods Receipt (GR)</span>
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formGR = document.getElementById('formGoodsReceipt');
+    const btnSubmitGR = document.getElementById('btnSubmitGR');
+    const doInput = document.getElementById('delivery_order_number');
+    const notesInput = document.getElementById('notes');
+
+    // ============================================================
+    // 1. QUICK CHIPS SAMPLE UNTUK FORM CATATAN & DO
+    // ============================================================
+    document.querySelectorAll('.quick-sample-chip[data-sample-do]').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const sampleDo = this.getAttribute('data-sample-do');
+            const sampleNotes = this.getAttribute('data-sample-notes');
+
+            if (doInput) {
+                doInput.value = sampleDo;
+                doInput.classList.add('border-success');
+                setTimeout(() => doInput.classList.remove('border-success'), 1200);
+            }
+            if (notesInput && sampleNotes) {
+                notesInput.value = sampleNotes;
+            }
+
+            const alertPlaceholder = document.getElementById('ai-alert-placeholder');
+            if (alertPlaceholder) {
+                alertPlaceholder.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm py-2 px-3 small mb-0" role="alert">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        <strong>Contoh Sampel Dimuat:</strong> Nomor DO <code>${sampleDo}</code> berhasil dimasukkan.
+                        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+            }
+
+            // Highlight chip aktif
+            document.querySelectorAll('.quick-sample-chip[data-sample-do]').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    document.querySelectorAll('.note-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const noteText = this.getAttribute('data-note');
+            if (notesInput) {
+                if (notesInput.value.trim() === '') {
+                    notesInput.value = noteText;
+                } else if (!notesInput.value.includes(noteText)) {
+                    notesInput.value += ', ' + noteText;
+                }
+            }
+        });
+    });
+
+    // ============================================================
+    // 2. FITUR AI SCANNER SURAT JALAN
+    // ============================================================
+    const btnTriggerAIScan = document.getElementById('btn-ai-scan');
+    const aiScanFileInput = document.getElementById('ai-scan-file');
+
+    if (btnTriggerAIScan && doInput) {
+        btnTriggerAIScan.addEventListener('click', function () {
+            const originalHtml = btnTriggerAIScan.innerHTML;
+            btnTriggerAIScan.disabled = true;
+            btnTriggerAIScan.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                AI Vision Memindai...
+            `;
+
+            const formData = new FormData();
+            if (aiScanFileInput && aiScanFileInput.files.length > 0) {
+                formData.append('file', aiScanFileInput.files[0]);
+            }
+
+            fetch('/api/ai-scan-do', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                btnTriggerAIScan.disabled = false;
+                btnTriggerAIScan.innerHTML = originalHtml;
+
+                if (data.success) {
+                    doInput.value = data.data.detected_do_number;
+                    doInput.classList.add('border-success');
+                    setTimeout(() => doInput.classList.remove('border-success'), 1500);
+
+                    if (notesInput && (!notesInput.value || notesInput.value.trim() === '')) {
+                        notesInput.value = data.data.ai_notes;
+                    }
+
+                    const alertPlaceholder = document.getElementById('ai-alert-placeholder');
+                    if (alertPlaceholder) {
+                        alertPlaceholder.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show shadow-sm py-2 px-3 small mb-0" role="alert">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <i class="bi bi-robot me-1 text-primary"></i>
+                                        <strong>AI Vision OCR Berhasil!</strong> Nomor Surat Jalan terdeteksi: 
+                                        <code class="fw-bold">${data.data.detected_do_number}</code> 
+                                        (Confidence: <span class="badge bg-success-subtle text-success">${data.data.confidence_score}</span>).
+                                    </div>
+                                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Notifikasi toast
+                    if (window.Swal) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Surat Jalan Terdeteksi AI!',
+                            text: `Nomor: ${data.data.detected_do_number}`,
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true
+                        });
+                    }
+                }
+            })
+            .catch(err => {
+                btnTriggerAIScan.disabled = false;
+                btnTriggerAIScan.innerHTML = originalHtml;
+                console.error(err);
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Info Pemindaian AI',
+                        text: 'Simulasi OCR tetap dapat Anda lakukan dengan tombol "Isi Otomatis Cepat" di bawah.',
+                        icon: 'info',
+                        confirmButtonColor: '#2563eb'
+                    });
+                }
+            });
+        });
+    }
+
+    // ============================================================
+    // 3. KALKULASI REAL-TIME TABEL INSPEKSI & DETEKSI STATUS GR
+    // ============================================================
+    function calculateGRSummary() {
+        const rows = document.querySelectorAll('.inspection-row');
+        if (!rows || rows.length === 0) return;
+
+        let totalQtyPO = 0;
+        let totalQtyRec = 0;
+        let isAllFull = true;
+        let hasDamaged = false;
+
+        rows.forEach(row => {
+            const qtyPo = parseInt(row.getAttribute('data-qty-po')) || 0;
+            const inputRec = row.querySelector('.input-qty-rec');
+            const selectCond = row.querySelector('.select-condition');
+
+            let qtyRec = parseInt(inputRec ? inputRec.value : 0) || 0;
+            if (qtyRec < 0) qtyRec = 0;
+            if (qtyRec > qtyPo) {
+                qtyRec = qtyPo;
+                if (inputRec) inputRec.value = qtyPo;
+            }
+
+            totalQtyPO += qtyPo;
+            totalQtyRec += qtyRec;
+
+            const cond = selectCond ? selectCond.value : 'Baik';
+
+            // Styling baris secara dinamis
+            row.classList.remove('row-item-warning', 'row-item-danger', 'row-item-success');
+            if (cond === 'Rusak' || cond === 'Tidak Sesuai') {
+                row.classList.add('row-item-danger');
+                hasDamaged = true;
+            } else if (qtyRec < qtyPo) {
+                row.classList.add('row-item-warning');
+            } else if (qtyRec === qtyPo && cond === 'Baik') {
+                row.classList.add('row-item-success');
+            }
+
+            if (qtyRec < qtyPo) {
+                isAllFull = false;
+            }
+        });
+
+        // Update elemen UI summary
+        const summaryRecCount = document.getElementById('summary-rec-count');
+        const summaryPoCount = document.getElementById('summary-po-count');
+        const summaryRecPercent = document.getElementById('summary-rec-percent');
+        const statusPredictedBadge = document.getElementById('status-predicted-badge');
+
+        if (summaryRecCount) summaryRecCount.innerText = totalQtyRec;
+        if (summaryPoCount) summaryPoCount.innerText = totalQtyPO;
+
+        const percent = totalQtyPO > 0 ? Math.round((totalQtyRec / totalQtyPO) * 100) : 0;
+        if (summaryRecPercent) summaryRecPercent.innerText = percent + '%';
+
+        if (statusPredictedBadge) {
+            if (isAllFull && !hasDamaged) {
+                statusPredictedBadge.className = 'badge-status badge-approved';
+                statusPredictedBadge.innerHTML = '<i class="bi bi-check2-all me-1"></i>Penerimaan Lengkap (Complete)';
+            } else {
+                statusPredictedBadge.className = 'badge-status badge-partial';
+                statusPredictedBadge.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Penerimaan Bertahap (Partial)';
+            }
+        }
+    }
+
+    // Listener input qty & select condition
+    document.querySelectorAll('.input-qty-rec').forEach(input => {
+        input.addEventListener('input', calculateGRSummary);
+        input.addEventListener('change', calculateGRSummary);
+    });
+
+    document.querySelectorAll('.select-condition').forEach(sel => {
+        sel.addEventListener('change', calculateGRSummary);
+    });
+
+    // Tombol Cepat: Set Semua Sesuai PO
+    const btnSetAllPO = document.getElementById('btn-set-all-po');
+    if (btnSetAllPO) {
+        btnSetAllPO.addEventListener('click', function() {
+            document.querySelectorAll('.inspection-row').forEach(row => {
+                const qtyPo = row.getAttribute('data-qty-po');
+                const inputRec = row.querySelector('.input-qty-rec');
+                if (inputRec) inputRec.value = qtyPo;
+            });
+            calculateGRSummary();
+        });
+    }
+
+    // Tombol Cepat: Set Semua Kondisi Baik
+    const btnSetAllGood = document.getElementById('btn-set-all-good');
+    if (btnSetAllGood) {
+        btnSetAllGood.addEventListener('click', function() {
+            document.querySelectorAll('.select-condition').forEach(sel => {
+                sel.value = 'Baik';
+            });
+            calculateGRSummary();
+        });
+    }
+
+    // Jalankan kalkulasi awal saat dokumen siap
+    calculateGRSummary();
+
+    // ============================================================
+    // 4. SUBMIT DENGAN MODAL SWEETALERT2
+    // ============================================================
+    if (btnSubmitGR && formGR) {
+        btnSubmitGR.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            if (doInput && !doInput.value.trim()) {
+                Swal.fire({
+                    title: 'Nomor Surat Jalan Wajib Diisi',
+                    text: 'Harap masukkan nomor Delivery Order / Surat Jalan fisik dari vendor rekanan.',
+                    icon: 'warning',
+                    confirmButtonColor: '#2563eb'
+                }).then(() => doInput.focus());
+                return;
+            }
+
+            const doNumber = doInput.value.trim();
+            const summaryBadge = document.getElementById('status-predicted-badge');
+            const statusText = summaryBadge ? summaryBadge.innerText.trim() : 'Lengkap';
+            const recCount = document.getElementById('summary-rec-count') ? document.getElementById('summary-rec-count').innerText : '0';
+            const poCount = document.getElementById('summary-po-count') ? document.getElementById('summary-po-count').innerText : '0';
+
+            Swal.fire({
+                title: 'Simpan Dokumen Goods Receipt (GR)?',
+                html: `
+                    <div class="text-start p-2 bg-light rounded-3 mb-3 small">
+                        <div class="mb-1"><strong>No. Surat Jalan:</strong> <code>${doNumber}</code></div>
+                        <div class="mb-1"><strong>Total Kuantitas:</strong> ${recCount} dari ${poCount} unit diterima</div>
+                        <div><strong>Status Prediksi:</strong> <span class="badge bg-success-subtle text-success fw-bold">${statusText}</span></div>
+                    </div>
+                    <p class="text-muted small mb-0">Apakah fisik paket barang telah diperiksa dan sesuai dengan dokumen pengiriman vendor?</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-check2-circle me-1"></i> Ya, Simpan Dokumen GR',
+                cancelButtonText: 'Periksa Fisik Lagi',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0',
+                    confirmButton: 'btn btn-success px-4 py-2 fw-bold rounded-3',
+                    cancelButton: 'btn btn-secondary px-4 py-2 fw-semibold rounded-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    formGR.submit();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

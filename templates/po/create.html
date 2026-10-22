@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}Terbitkan Purchase Order (PO) - PROCURE-APP{% endblock %}
+{% block page_title %}Penerbitan Purchase Order (PO){% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-11">
+        <div class="card card-custom p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom">
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-receipt me-2 text-primary"></i>Formulir Penerbitan Purchase Order (PO)</h4>
+                    <p class="text-muted small mb-0">Terbitkan pesanan pembelian resmi kepada vendor rekanan terpilih berdasarkan PR yang disetujui.</p>
+                </div>
+                <a href="{{ url_for('po_list') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar PO
+                </a>
+            </div>
+
+            <!-- PILIH PR JIKA BELUM DIPILIH -->
+            {% if not selected_pr %}
+            <div class="alert alert-info border-0 shadow-sm p-4 mb-4">
+                <h6 class="fw-bold"><i class="bi bi-info-circle-fill me-2"></i>Pilih Purchase Requisition (PR) yang Disetujui</h6>
+                <p class="small mb-3">Pilihlah salah satu nomor PR berstatus Approved di bawah ini untuk memulai pembuatan Purchase Order:</p>
+                <div class="list-group">
+                    {% for apr in approved_prs %}
+                    <a href="{{ url_for('po_create', pr_id=apr.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <strong class="text-primary fs-6">{{ apr.pr_number }}</strong> - {{ apr.department }}
+                            <div class="small text-muted">{{ apr.purpose }}</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold text-dark d-block">{{ apr.total_estimated_amount | format_currency }}</span>
+                            <span class="btn btn-sm btn-primary py-0 px-2 mt-1">Pilih PR Ini &rarr;</span>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="text-center py-4 text-muted bg-white rounded-2">
+                        Tidak ada Purchase Requisition (PR) berstatus Approved yang tersedia saat ini.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+
+            <!-- FORMULIR UTAMA PENERBITAN PO -->
+            <form method="POST" action="{{ url_for('po_create') }}">
+                <input type="hidden" name="pr_id" value="{{ selected_pr.id }}">
+
+                <!-- CARD REFERENSI PR -->
+                <div class="card bg-light border p-3 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <span class="badge bg-success-subtle text-success fw-bold mb-1">PR Sumber Terverifikasi</span>
+                            <h6 class="fw-bold mb-0 text-dark">{{ selected_pr.pr_number }} &bull; {{ selected_pr.department }}</h6>
+                            <small class="text-muted">Pemohon: {{ selected_pr.requester.full_name }} &bull; Di-approve oleh: {{ selected_pr.approver.full_name if selected_pr.approver else '-' }}</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('po_create') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-arrow-repeat me-1"></i> Ganti PR Sumber
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATA INFORMASI VENDOR & KONTRAK PO -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-building me-2 text-primary"></i>Informasi Rekanan / Vendor Terpilih</h6>
+                </div>
+
+                <!-- QUICK AUTO-FILL VENDOR CHIPS -->
+                <div class="mb-3 p-3 bg-light rounded-3 border">
+                    <small class="text-muted fw-bold d-block mb-2">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Pilih Cepat Vendor Terdaftar (Quick Auto-Fill):
+                    </small>
+                    <div class="vendor-presets-wrap">
+                        <span class="vendor-chip" onclick="fillVendor('PT Solusi Mitra Informatika', '021-52908877', 'sales@solusimitra.co.id', 'Gedung Cyber 2 Lt. 8, Jl. HR Rasuna Said Blok X-5, Kuningan, Jakarta Selatan')">
+                            <i class="bi bi-laptop text-primary"></i> PT Solusi Mitra Informatika (IT Hardware)
+                        </span>
+                        <span class="vendor-chip" onclick="fillVendor('CV ATK Berkah Jaya Mandiri', '021-3908812', 'order@atkberkah.com', 'Ruko Sentra Niaga Blok C-12, Jl. Pramuka Raya No. 45, Jakarta Timur')">
+                            <i class="bi bi-pencil-square text-success"></i> CV ATK Berkah Jaya Mandiri (Office & Stationery)
+                        </span>
+                        <span class="vendor-chip" onclick="fillVendor('PT Triputra Daya Mandiri', '021-7890123', 'info@triputradaya.co.id', 'Kawasan Industri Pulogadung Blok F-10, Jakarta Timur')">
+                            <i class="bi bi-cpu text-info"></i> PT Triputra Daya Mandiri (Server & Electrical)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Nama Perusahaan / Rekanan Vendor <span class="text-danger">*</span></label>
+                        <input type="text" name="vendor_name" class="form-control" placeholder="Contoh: PT Solusi Mitra Informatika" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">No. Telepon Vendor</label>
+                        <input type="text" name="vendor_phone" class="form-control" placeholder="Contoh: 021-5551234">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">Email Kontak Vendor</label>
+                        <input type="email" name="vendor_email" class="form-control" placeholder="sales@vendor.co.id">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary">Alamat Lengkap Kantor / Gudang Vendor</label>
+                        <input type="text" name="vendor_address" class="form-control" placeholder="Alamat kantor / gudang vendor penyedia barang">
+                    </div>
+                </div>
+
+                <!-- SYARAT PEMBAYARAN & PENGIRIMAN -->
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-calendar2-check me-2 text-primary"></i>Ketentuan Pengiriman & Pembayaran</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Tanggal Terbit PO</label>
+                        <input type="date" class="form-control bg-light" value="{{ today_str }}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Estimasi Tanggal Kirim Tiba di Gudang</label>
+                        <input type="date" name="delivery_estimate_date" class="form-control" min="{{ today_str }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary">Syarat Pembayaran (Payment Terms)</label>
+                        <select name="payment_terms" class="form-select">
+                            <option value="Net 30 Days" selected>Net 30 Days (30 Hari setelah invoice & GR)</option>
+                            <option value="Net 14 Days">Net 14 Days</option>
+                            <option value="Cash On Delivery (COD)">Cash On Delivery (COD)</option>
+                            <option value="Advance Payment / DP 50%">Advance Payment / DP 50%</option>
+                            <option value="Transfer 100% saat barang diterima">Transfer 100% saat barang diterima</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary">Catatan Khusus PO / Instruksi Pengiriman</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Contoh: Pengiriman wajib disertai surat jalan asli dan copy PO. Harap hubungi PIC gudang 1 hari sebelum pengiriman."></textarea>
+                    </div>
+                </div>
+
+                <!-- ITEM BARANG & HARGA FINAL VENDOR -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-boxes me-2 text-primary"></i>Item Pesanan Pembelian & Harga Deal</h6>
+                    <small class="text-muted"><i class="bi bi-calculator me-1"></i>Perhitungan subtotal & grand total real-time otomatis</small>
+                </div>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-custom" id="po-items-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 45px;">No</th>
+                                <th>Nama Barang / Jasa</th>
+                                <th>Spesifikasi Teknis</th>
+                                <th class="text-center" style="width: 110px;">Qty Dipesan</th>
+                                <th class="text-center" style="width: 90px;">Satuan</th>
+                                <th style="width: 210px;">Harga Satuan Vendor (Rp)</th>
+                                <th class="text-end" style="width: 180px;">Subtotal (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="po-items-tbody">
+                            {% for item in selected_pr.items %}
+                            <tr class="po-item-row">
+                                <td class="text-center text-muted fw-bold">{{ loop.index }}</td>
+                                <td class="fw-bold text-dark">{{ item.item_name }}</td>
+                                <td class="small text-muted">{{ item.specification or '-' }}</td>
+                                <td>
+                                    <input type="number" name="quantity_{{ item.id }}" class="form-control form-control-sm text-center po-item-qty fw-bold" value="{{ item.quantity }}" min="1" required>
+                                </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">{{ item.unit }}</span></td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white fw-bold">Rp</span>
+                                        <input type="number" name="unit_price_{{ item.id }}" class="form-control po-item-price fw-bold" value="{{ item.estimated_price|int }}" min="0" step="1000" required>
+                                    </div>
+                                </td>
+                                <td class="text-end fw-bold text-primary po-item-subtotal-text fs-6">
+                                    {{ item.subtotal | format_currency }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <td colspan="6" class="text-end fw-bold fs-6">Grand Total Nilai Pesanan Pembelian (PO):</td>
+                                <td class="text-end fw-bold fs-5 text-primary" id="po-grand-total">
+                                    {{ selected_pr.total_estimated_amount | format_currency }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- TOMBOL TERBITKAN PO -->
+                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a href="{{ url_for('po_list') }}" class="btn btn-light border px-4 py-2 fw-semibold" style="border-radius: 8px;">Batal</a>
+                    <button type="button" id="btnSubmitPO" class="btn btn-primary px-4 py-2 shadow-sm fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                        <i class="bi bi-send-check-fill fs-5"></i>
+                        <span>Terbitkan Purchase Order Resmi</span>
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick Vendor Auto-Fill Helper
+    window.fillVendor = function(name, phone, email, address) {
+        const form = document.querySelector('form');
+        if (!form) return;
+        const nameInput = form.querySelector('input[name="vendor_name"]');
+        const phoneInput = form.querySelector('input[name="vendor_phone"]');
+        const emailInput = form.querySelector('input[name="vendor_email"]');
+        const addressInput = form.querySelector('input[name="vendor_address"]');
+        
+        if (nameInput) nameInput.value = name;
+        if (phoneInput) phoneInput.value = phone;
+        if (emailInput) emailInput.value = email;
+        if (addressInput) addressInput.value = address;
+        
+        document.querySelectorAll('.vendor-chip').forEach(c => c.classList.remove('active'));
+        if (window.event && window.event.currentTarget) {
+            window.event.currentTarget.classList.add('active');
+        }
+    };
+
+    // Real-Time Live Calculation
+    function formatRupiah(number) {
+        return 'Rp ' + Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function recalculateTotals() {
+        let grandTotal = 0;
+        const rows = document.querySelectorAll('.po-item-row');
+        rows.forEach(row => {
+            const qtyInput = row.querySelector('.po-item-qty');
+            const priceInput = row.querySelector('.po-item-price');
+            const subtotalEl = row.querySelector('.po-item-subtotal-text');
+
+            const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+            const price = parseFloat(priceInput ? priceInput.value : 0) || 0;
+            const subtotal = qty * price;
+
+            if (subtotalEl) {
+                subtotalEl.textContent = formatRupiah(subtotal);
+            }
+            grandTotal += subtotal;
+        });
+
+        const grandTotalEl = document.getElementById('po-grand-total');
+        if (grandTotalEl) {
+            grandTotalEl.textContent = formatRupiah(grandTotal);
+        }
+    }
+
+    // Attach real-time input listeners
+    const tableEl = document.getElementById('po-items-table');
+    if (tableEl) {
+        tableEl.addEventListener('input', function(e) {
+            if (e.target.classList.contains('po-item-qty') || e.target.classList.contains('po-item-price')) {
+                recalculateTotals();
+            }
+        });
+        tableEl.addEventListener('change', function(e) {
+            if (e.target.classList.contains('po-item-qty') || e.target.classList.contains('po-item-price')) {
+                recalculateTotals();
+            }
+        });
+    }
+
+    // SweetAlert2 Confirmation on Submit
+    const btnSubmitPO = document.getElementById('btnSubmitPO');
+    const formPO = btnSubmitPO ? btnSubmitPO.closest('form') : null;
+
+    if (btnSubmitPO && formPO) {
+        btnSubmitPO.addEventListener('click', function(e) {
+            e.preventDefault();
+            const vendorNameInput = formPO.querySelector('input[name="vendor_name"]');
+            if (vendorNameInput && !vendorNameInput.value.trim()) {
+                Swal.fire({
+                    title: 'Nama Vendor Wajib Diisi',
+                    text: 'Silakan isi nama perusahaan atau rekanan vendor sebelum menerbitkan PO.',
+                    icon: 'warning',
+                    confirmButtonColor: '#2563eb'
+                }).then(() => vendorNameInput.focus());
+                return;
+            }
+
+            const vendorName = vendorNameInput ? vendorNameInput.value.trim() : 'Vendor';
+            const grandTotalEl = document.getElementById('po-grand-total');
+            const totalVal = grandTotalEl ? grandTotalEl.textContent.trim() : '';
+
+            Swal.fire({
+                title: 'Terbitkan Purchase Order?',
+                html: `Apakah Anda yakin ingin menerbitkan PO resmi kepada <strong>${vendorName}</strong> dengan total nilai <strong class="text-primary">${totalVal}</strong>?<br><br><small class="text-muted">Dokumen PO akan diterbitkan dan siap dikirimkan ke vendor rekanan.</small>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-send-check-fill me-1"></i> Ya, Terbitkan Sekarang!',
+                cancelButtonText: 'Periksa Kembali',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0',
+                    confirmButton: 'btn btn-primary px-4 py-2 fw-bold rounded-3',
+                    cancelButton: 'btn btn-secondary px-4 py-2 fw-semibold rounded-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    formPO.submit();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,876 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard {{ current_user.role }} - PROCURE-APP{% endblock %}
+{% block page_title %}Dashboard Pengadaan{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     1. BANNER SAMBUTAN PERSONAL SESUAI ROLE (5 ROLE DEDICATED)
+     ============================================================ -->
+<div class="requester-welcome-banner mb-4 animate-reveal delay-1">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-white text-primary fw-bold px-2 py-1" style="font-size: 0.72rem;">
+                    <i class="bi bi-person-badge-fill me-1"></i>Role: {{ current_user.role }}
+                </span>
+                <span class="badge bg-white bg-opacity-25 text-white" style="font-size: 0.72rem;">
+                    <i class="bi bi-building me-1"></i>{{ current_user.department or 'Divisi Terpadu' }}
+                </span>
+                <span class="badge bg-success-subtle text-success fw-bold px-2 py-1" style="font-size: 0.70rem;">
+                    <i class="bi bi-broadcast me-1"></i>Real-time Portal
+                </span>
+            </div>
+            <h3 class="fw-bold mb-1 text-white">Selamat Datang, {{ current_user.full_name }}!</h3>
+            <p class="mb-0 text-white text-opacity-75 small">
+                {% if current_user.role == 'Requester' %}
+                    Pantau pengajuan pengadaan (*Purchase Requisition*) divisi Anda, cek persetujuan anggaran, dan lacak pesanan secara *real-time*.
+                {% elif current_user.role == 'Approver' %}
+                    Tinjau kelayakan pengajuan pengadaan (*PR*), validasi alokasi anggaran belanja departemen, dan berikan otorisasi persetujuan secara cepat.
+                {% elif current_user.role == 'Purchasing' %}
+                    Kelola penerbitan pesanan resmi (*Purchase Order*) kepada rekanan vendor terverifikasi berdasarkan PR yang telah disetujui pimpinan.
+                {% elif current_user.role == 'Warehouse' %}
+                    Pusat kendali verifikasi fisik barang masuk di gudang, pemindaian surat jalan vendor via AI Vision OCR, dan pemutakhiran bukti terima (*GR*).
+                {% else %}
+                    Pusat pengawasan tata kelola pengadaan perusahaan (*End-to-End Procurement Governance*), kendali anggaran, dan audit alur transaksi.
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            {% if current_user.role == 'Requester' %}
+            <a href="{{ url_for('pr_create') }}" class="btn btn-light text-primary fw-bold shadow-sm px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                <i class="bi bi-plus-circle-fill fs-5"></i>
+                <span>Ajukan PR Baru</span>
+            </a>
+            {% elif current_user.role == 'Approver' %}
+            <a href="{{ url_for('approval_list') }}" class="btn btn-warning text-dark fw-bold shadow-sm px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                <i class="bi bi-check2-circle fs-5"></i>
+                <span>Tinjau Approval ({{ pending_pr }} Menunggu)</span>
+            </a>
+            {% elif current_user.role == 'Purchasing' %}
+            <a href="{{ url_for('po_create') }}" class="btn btn-light text-primary fw-bold shadow-sm px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                <i class="bi bi-receipt fs-5"></i>
+                <span>Terbitkan PO ({{ approved_pr }} Siap)</span>
+            </a>
+            {% elif current_user.role == 'Warehouse' %}
+            <a href="{{ url_for('gr_create') }}" class="btn btn-success text-white fw-bold shadow-sm px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                <i class="bi bi-box-arrow-in-down fs-5"></i>
+                <span>Catat Penerimaan (GR)</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('pr_list') }}" class="btn btn-light text-primary fw-bold shadow-sm px-4 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                <i class="bi bi-speedometer2 fs-5"></i>
+                <span>Monitoring Sistem</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     2. ALUR PROSES PENGADAAN TERINTEGRASI (ROLE-FOCUSED WORKFLOW)
+     ============================================================ -->
+<div class="card card-custom p-4 mb-4 animate-reveal delay-2" style="border-radius: 14px;">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="bi bi-diagram-3-fill text-primary"></i>
+            <span>Alur Proses Pengadaan Terintegrasi</span>
+        </h6>
+        <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size: 0.72rem;">Siklus 4 Tahapan Utama</span>
+    </div>
+    
+    <div class="procurement-flow-track px-3">
+        <div class="flow-line"></div>
+        <!-- Langkah 1: PR -->
+        <div class="flow-step {% if current_user.role == 'Requester' %}active{% else %}completed{% endif %}">
+            <div class="flow-circle"><i class="bi bi-file-earmark-plus-fill"></i></div>
+            <div class="flow-title">1. Purchase Requisition</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Requester / Pemohon</small>
+        </div>
+        <!-- Langkah 2: Approval -->
+        <div class="flow-step {% if current_user.role == 'Approver' %}active{% elif current_user.role in ['Purchasing', 'Warehouse'] or (pending_pr == 0 and approved_pr > 0) %}completed{% endif %}">
+            <div class="flow-circle"><i class="bi bi-check2-all"></i></div>
+            <div class="flow-title">2. Approval PR</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Approver / Dept Head</small>
+        </div>
+        <!-- Langkah 3: PO -->
+        <div class="flow-step {% if current_user.role == 'Purchasing' %}active{% elif current_user.role == 'Warehouse' or total_po > 0 %}completed{% endif %}">
+            <div class="flow-circle"><i class="bi bi-receipt-cutoff"></i></div>
+            <div class="flow-title">3. Purchase Order (PO)</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Purchasing ke Vendor</small>
+        </div>
+        <!-- Langkah 4: GR -->
+        <div class="flow-step {% if current_user.role == 'Warehouse' %}active{% elif total_gr > 0 %}completed{% endif %}">
+            <div class="flow-circle"><i class="bi bi-box-seam-fill"></i></div>
+            <div class="flow-title">4. Goods Receipt (GR)</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Warehouse / Tiba Fisik</small>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     3. KARTU KPI & METRIK REAL-TIME (5-ROLE TAILORED)
+     ============================================================ -->
+<div class="row g-3 mb-4 animate-reveal delay-3">
+    {% if current_user.role == 'Requester' %}
+        <!-- METRIK KHUSUS ROLE REQUESTER -->
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Pengajuan PR Saya</span>
+                    <div class="kpi-value text-dark">{{ my_total_pr }}</div>
+                    <div class="kpi-subtext">Total kebutuhan diajukan</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-warning">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Menunggu Persetujuan</span>
+                    <div class="kpi-value text-warning-emphasis">{{ my_pending_pr }}</div>
+                    <div class="kpi-subtext">Dalam tinjauan Approver</div>
+                </div>
+                <div class="kpi-icon-box bg-warning-subtle text-warning-emphasis">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-success">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Disetujui & Proses PO</span>
+                    <div class="kpi-value text-success">{{ my_approved_pr + my_pocreated_pr }}</div>
+                    <div class="kpi-subtext">{{ my_pocreated_pr }} PO sedang dipesan</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-info">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Anggaran PR Saya</span>
+                    <div class="kpi-value text-primary fs-5" title="{{ my_total_spent | format_currency }}">
+                        {{ my_total_spent | format_currency }}
+                    </div>
+                    <div class="kpi-subtext">Akumulasi estimasi biaya</div>
+                </div>
+                <div class="kpi-icon-box bg-info-subtle text-info">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+        </div>
+
+    {% elif current_user.role == 'Approver' %}
+        <!-- METRIK KHUSUS ROLE APPROVER -->
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-warning">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Menunggu Otorisasi</span>
+                    <div class="kpi-value text-warning-emphasis">{{ pending_pr }}</div>
+                    <div class="kpi-subtext">Perlu ditinjau segera</div>
+                </div>
+                <div class="kpi-icon-box bg-warning-subtle text-warning-emphasis">
+                    <i class="bi bi-shield-exclamation"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-success">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">PR Telah Disetujui</span>
+                    <div class="kpi-value text-success">{{ approved_pr + pocreated_pr }}</div>
+                    <div class="kpi-subtext">Otorisasi berhasil</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-danger">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">PR Ditolak</span>
+                    <div class="kpi-value text-danger">{{ rejected_pr }}</div>
+                    <div class="kpi-subtext">Tidak memenuhi syarat</div>
+                </div>
+                <div class="kpi-icon-box bg-danger-subtle text-danger">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Nilai Anggaran Pending</span>
+                    <div class="kpi-value text-primary fs-5" title="{{ total_approver_amount | format_currency }}">
+                        {{ total_approver_amount | format_currency }}
+                    </div>
+                    <div class="kpi-subtext">Total nominal butuh approval</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+
+    {% elif current_user.role == 'Purchasing' %}
+        <!-- METRIK KHUSUS ROLE PURCHASING -->
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">PR Siap Dibuatkan PO</span>
+                    <div class="kpi-value text-primary">{{ approved_pr }}</div>
+                    <div class="kpi-subtext">Telah disetujui pimpinan</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-info">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total PO Terbit</span>
+                    <div class="kpi-value text-info-emphasis">{{ total_po }}</div>
+                    <div class="kpi-subtext">Pesanan resmi vendor</div>
+                </div>
+                <div class="kpi-icon-box bg-info-subtle text-info-emphasis">
+                    <i class="bi bi-receipt"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-warning">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Menunggu Pengiriman</span>
+                    <div class="kpi-value text-warning-emphasis">{{ issued_po }}</div>
+                    <div class="kpi-subtext">Status PO Issued</div>
+                </div>
+                <div class="kpi-icon-box bg-warning-subtle text-warning-emphasis">
+                    <i class="bi bi-send-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-success">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Belanja PO</span>
+                    <div class="kpi-value text-success fs-5" title="{{ total_po_amount | format_currency }}">
+                        {{ total_po_amount | format_currency }}
+                    </div>
+                    <div class="kpi-subtext">{{ received_po }} PO selesai di gudang</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+
+    {% elif current_user.role == 'Warehouse' %}
+        <!-- METRIK KHUSUS ROLE WAREHOUSE -->
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-warning">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">PO Menunggu Fisik</span>
+                    <div class="kpi-value text-warning-emphasis">{{ waiting_po_count }}</div>
+                    <div class="kpi-subtext">Siap diterima di gudang</div>
+                </div>
+                <div class="kpi-icon-box bg-warning-subtle text-warning-emphasis">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Penerimaan (GR)</span>
+                    <div class="kpi-value text-dark">{{ total_gr }}</div>
+                    <div class="kpi-subtext">Dokumen fisik diverifikasi</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-success">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Penerimaan Lengkap</span>
+                    <div class="kpi-value text-success">{{ complete_gr }}</div>
+                    <div class="kpi-subtext">100% kuantitas sesuai</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-info">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Penerimaan Bertahap</span>
+                    <div class="kpi-value text-info-emphasis">{{ partial_gr }}</div>
+                    <div class="kpi-subtext">Menunggu sisa kiriman</div>
+                </div>
+                <div class="kpi-icon-box bg-info-subtle text-info-emphasis">
+                    <i class="bi bi-pie-chart-fill"></i>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- METRIK KHUSUS ROLE ADMIN (GLOBAL GOVERNANCE) -->
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total PR Diajukan</span>
+                    <div class="kpi-value text-dark">{{ total_pr }}</div>
+                    <div class="kpi-subtext">{{ pending_pr }} perlu approval</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-info">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Purchase Order</span>
+                    <div class="kpi-value text-info-emphasis">{{ total_po }}</div>
+                    <div class="kpi-subtext">{{ issued_po }} proses vendor</div>
+                </div>
+                <div class="kpi-icon-box bg-info-subtle text-info-emphasis">
+                    <i class="bi bi-receipt"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-success">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Goods Receipt (GR)</span>
+                    <div class="kpi-value text-success">{{ total_gr }}</div>
+                    <div class="kpi-subtext">{{ complete_gr }} selesai di gudang</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card border-start border-4 border-primary">
+                <div class="kpi-card-content">
+                    <span class="kpi-label">Total Anggaran Belanja</span>
+                    <div class="kpi-value text-primary fs-5" title="{{ total_company_budget | format_currency }}">
+                        {{ total_company_budget | format_currency }}
+                    </div>
+                    <div class="kpi-subtext">{{ total_users_count }} Pengguna Aktif</div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary">
+                    <i class="bi bi-bank2"></i>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ============================================================
+     4. GRAFIK STATUS REAL-TIME & AKSI CEPAT ROLE
+     ============================================================ -->
+<div class="row g-4 mb-4 animate-reveal delay-4">
+    <!-- Chart Status Real-time Sesuai Role -->
+    <div class="col-lg-7">
+        <div class="card card-custom p-4 h-100" style="border-radius: 14px;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-pie-chart-fill text-primary"></i>
+                    <span>{{ current_chart.title }}</span>
+                </h6>
+                <span class="badge bg-light text-secondary border" style="font-size: 0.72rem;">Live Visual Analysis</span>
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="roleDynamicChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Card Sesuai Role Saat Ini -->
+    <div class="col-lg-5">
+        <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between" style="border-radius: 14px;">
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary px-2 py-1"><i class="bi bi-person-fill me-1"></i>{{ current_user.role }}</span>
+                        <h6 class="fw-bold mb-0 text-dark">Langkah Kerja Cepat</h6>
+                    </div>
+                    <span class="badge bg-success-subtle text-success fw-bold" style="font-size: 0.68rem;">
+                        <i class="bi bi-check-circle me-1"></i>Siap Kerja
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Halo <strong>{{ current_user.full_name }}</strong>, berikut adalah navigasi tugas harian yang diprioritaskan untuk Anda:
+                </p>
+
+                <div class="list-group list-group-flush gap-2">
+                    {% if current_user.role == 'Requester' %}
+                    <a href="{{ url_for('pr_create') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white p-2 rounded-2"><i class="bi bi-plus-lg fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Buat Pengajuan PR Baru</div>
+                            <small class="text-muted">Input spesifikasi barang & estimasi biaya kebutuhan</small>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('pr_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-light text-primary border p-2 rounded-2"><i class="bi bi-card-checklist fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Lihat Semua Daftar PR Saya</div>
+                            <small class="text-muted">Pantau status persetujuan & nomor PO terkait</small>
+                        </div>
+                    </a>
+
+                    {% elif current_user.role == 'Approver' %}
+                    <a href="{{ url_for('approval_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-warning text-dark p-2 rounded-2"><i class="bi bi-check2-square fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Review Antrean PR ({{ pending_pr }} Menunggu)</div>
+                            <small class="text-muted">Setujui (Approve) atau Tolak (Reject) pengajuan</small>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('pr_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-light text-primary border p-2 rounded-2"><i class="bi bi-journal-text fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Riwayat Keputusan Pengadaan</div>
+                            <small class="text-muted">Lihat seluruh dokumen yang telah diputuskan</small>
+                        </div>
+                    </a>
+
+                    {% elif current_user.role == 'Purchasing' %}
+                    <a href="{{ url_for('po_create') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white p-2 rounded-2"><i class="bi bi-receipt-cutoff fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Terbitkan PO Baru ({{ approved_pr }} PR Siap)</div>
+                            <small class="text-muted">Pilih PR approved lalu pilih rekanan vendor resmi</small>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('po_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-light text-info border p-2 rounded-2"><i class="bi bi-send-check fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Lacak Pemenuhan Kirim Vendor</div>
+                            <small class="text-muted">Pantau jadwal tiba paket dan koordinasi gudang</small>
+                        </div>
+                    </a>
+
+                    {% elif current_user.role == 'Warehouse' %}
+                    <a href="{{ url_for('gr_create') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-success text-white p-2 rounded-2"><i class="bi bi-box-arrow-in-down fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Catat Penerimaan Barang (GR)</div>
+                            <small class="text-muted">Verifikasi fisik barang tiba & no. surat jalan vendor</small>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('gr_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-light text-success border p-2 rounded-2"><i class="bi bi-boxes fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Daftar Bukti Penerimaan Gudang</div>
+                            <small class="text-muted">Lihat dan cetak dokumen resmi Goods Receipt Slip</small>
+                        </div>
+                    </a>
+
+                    {% else %}
+                    <!-- Admin Quick Actions -->
+                    <a href="{{ url_for('pr_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white p-2 rounded-2"><i class="bi bi-file-earmark-text fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Audit Seluruh Pengajuan (PR)</div>
+                            <small class="text-muted">Lihat rekapitulasi kebutuhan lintas divisi</small>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('po_list') }}" class="list-group-item list-group-item-action border rounded-3 p-3 d-flex align-items-center gap-3">
+                        <div class="bg-info text-white p-2 rounded-2"><i class="bi bi-receipt fs-5"></i></div>
+                        <div>
+                            <div class="fw-bold text-dark">Audit Kontrak & Belanja (PO)</div>
+                            <small class="text-muted">Monitoring realisasi pengadaan dengan vendor</small>
+                        </div>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-3 pt-3 border-top d-flex align-items-center justify-content-between text-muted small">
+                <span>Keamanan Sistem:</span>
+                <span class="badge bg-success-subtle text-success fw-bold"><i class="bi bi-shield-check me-1"></i>Aktif & Terenkripsi</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     5. DUA TABEL TRANSAKSI TERBARU (SPESIFIK SESUAI ROLE)
+     ============================================================ -->
+<div class="row g-4 animate-reveal delay-5">
+    {% if current_user.role == 'Approver' %}
+        <!-- TABEL APPROVER 1: ANTREAN PR MENUNGGU PERSETUJUAN -->
+        <div class="col-lg-6">
+            <div class="card card-custom p-3 h-100" style="border-radius: 14px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 px-2 pt-1">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-bell-fill text-warning"></i>
+                        <span>Antrean PR Menunggu Persetujuan Anda</span>
+                    </h6>
+                    <a href="{{ url_for('approval_list') }}" class="small text-primary text-decoration-none fw-bold">Buka Approval &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>No. PR</th>
+                                <th>Pemohon</th>
+                                <th class="text-end">Estimasi Biaya</th>
+                                <th class="text-center">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apr in pending_prs_list %}
+                            <tr class="stagger-row">
+                                <td>
+                                    <a href="{{ url_for('approval_review', pr_id=apr.id) }}" class="fw-bold text-decoration-none text-primary">
+                                        {{ apr.pr_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ apr.requester.full_name }}</div>
+                                    <small class="text-muted">{{ apr.department }}</small>
+                                </td>
+                                <td class="text-end fw-bold text-dark">{{ apr.total_estimated_amount | format_currency }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('approval_review', pr_id=apr.id) }}" class="btn btn-sm btn-warning fw-bold py-0 px-2" style="border-radius: 6px;">
+                                        <i class="bi bi-check2"></i> Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                                    Tidak ada antrean pengajuan yang menunggu persetujuan Anda saat ini.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    {% elif current_user.role == 'Purchasing' %}
+        <!-- TABEL PURCHASING 1: PR DISATUJUI SIAP PO -->
+        <div class="col-lg-6">
+            <div class="card card-custom p-3 h-100" style="border-radius: 14px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 px-2 pt-1">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-bell-fill text-primary"></i>
+                        <span>PR Approved Siap Diterbitkan PO</span>
+                    </h6>
+                    <a href="{{ url_for('po_create') }}" class="small text-primary text-decoration-none fw-bold">Terbitkan PO &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>No. PR</th>
+                                <th>Departemen</th>
+                                <th class="text-end">Estimasi Biaya</th>
+                                <th class="text-center">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apr in approved_prs_ready_po %}
+                            <tr class="stagger-row">
+                                <td>
+                                    <a href="{{ url_for('po_create', pr_id=apr.id) }}" class="fw-bold text-decoration-none text-primary">
+                                        {{ apr.pr_number }}
+                                    </a>
+                                </td>
+                                <td>{{ apr.department }}</td>
+                                <td class="text-end fw-bold text-dark">{{ apr.total_estimated_amount | format_currency }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('po_create', pr_id=apr.id) }}" class="btn btn-sm btn-primary fw-semibold py-0 px-2" style="border-radius: 6px;">
+                                        <i class="bi bi-receipt"></i> Buat PO
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                                    Semua PR approved telah diproses ke tahap PO.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    {% elif current_user.role == 'Warehouse' %}
+        <!-- TABEL WAREHOUSE 1: PO MENUNGGU KEDATANGAN FISIK -->
+        <div class="col-lg-6">
+            <div class="card card-custom p-3 h-100" style="border-radius: 14px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 px-2 pt-1">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-truck text-warning"></i>
+                        <span>PO Menunggu Kedatangan Fisik di Gudang</span>
+                    </h6>
+                    <a href="{{ url_for('gr_list') }}" class="small text-primary text-decoration-none fw-bold">Semua Antrean &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>No. PO</th>
+                                <th>Vendor Rekanan</th>
+                                <th>Target Tiba</th>
+                                <th class="text-center">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for opo in open_pos %}
+                            <tr class="stagger-row">
+                                <td>
+                                    <a href="{{ url_for('gr_create', po_id=opo.id) }}" class="fw-bold text-decoration-none text-primary">
+                                        {{ opo.po_number }}
+                                    </a>
+                                </td>
+                                <td class="fw-semibold text-dark text-truncate" style="max-width: 140px;" title="{{ opo.vendor_name }}">{{ opo.vendor_name }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ opo.delivery_estimate_date | format_date }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('gr_create', po_id=opo.id) }}" class="btn btn-sm btn-success fw-semibold py-0 px-2" style="border-radius: 6px;">
+                                        <i class="bi bi-box-arrow-in-down"></i> Terima
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-box-seam fs-3 text-secondary d-block mb-1"></i>
+                                    Tidak ada PO yang sedang menunggu kedatangan fisik di gudang.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- TABEL UMUM / REQUESTER / ADMIN 1: PR TERBARU -->
+        <div class="col-lg-6">
+            <div class="card card-custom p-3 h-100" style="border-radius: 14px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 px-2 pt-1">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-text-fill text-primary"></i>
+                        <span>{% if current_user.role == 'Requester' %}Pengajuan PR Saya Terbaru{% else %}Purchase Requisition (PR) Terbaru{% endif %}</span>
+                    </h6>
+                    <a href="{{ url_for('pr_list') }}" class="small text-primary text-decoration-none fw-bold">Lihat Semua PR &rarr;</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>No. PR</th>
+                                <th>Pemohon</th>
+                                <th class="text-end">Total Estimasi</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pr in recent_prs %}
+                            <tr class="stagger-row">
+                                <td>
+                                    <a href="{{ url_for('pr_detail', pr_id=pr.id) }}" class="fw-bold text-decoration-none text-primary">
+                                        {{ pr.pr_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ pr.requester.full_name }}</div>
+                                    <small class="text-muted">{{ pr.department }}</small>
+                                </td>
+                                <td class="text-end fw-bold text-dark">{{ pr.total_estimated_amount | format_currency }}</td>
+                                <td class="text-center">
+                                    {% if pr.status == 'Pending' %}
+                                        <span class="badge-status badge-pending"><i class="bi bi-clock"></i> Pending</span>
+                                    {% elif pr.status == 'Approved' %}
+                                        <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Approved</span>
+                                    {% elif pr.status == 'Rejected' %}
+                                        <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Rejected</span>
+                                    {% elif pr.status == 'PO Created' %}
+                                        <span class="badge-status badge-pocreated"><i class="bi bi-receipt"></i> PO Created</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Belum ada pengajuan PR.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- TABEL 2 (KANAN): DOKUMEN REALISASI (PO ATAU GR TERBARU) -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-3 h-100" style="border-radius: 14px;">
+            <div class="d-flex align-items-center justify-content-between mb-3 px-2 pt-1">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    {% if current_user.role == 'Warehouse' %}
+                        <i class="bi bi-box-seam-fill text-success"></i>
+                        <span>Dokumen Goods Receipt (GR) Terakhir</span>
+                    {% else %}
+                        <i class="bi bi-receipt-cutoff text-info"></i>
+                        <span>Purchase Order (PO) & Rekanan Vendor</span>
+                    {% endif %}
+                </h6>
+                {% if current_user.role == 'Warehouse' %}
+                    <a href="{{ url_for('gr_list') }}" class="small text-primary text-decoration-none fw-bold">Lihat Semua GR &rarr;</a>
+                {% else %}
+                    <a href="{{ url_for('po_list') }}" class="small text-primary text-decoration-none fw-bold">Lihat Semua PO &rarr;</a>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    {% if current_user.role == 'Warehouse' %}
+                    <thead>
+                        <tr>
+                            <th>No. GR</th>
+                            <th>No. Surat Jalan (DO)</th>
+                            <th>Tanggal Tiba</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gr in recent_grs %}
+                        <tr class="stagger-row">
+                            <td>
+                                <a href="{{ url_for('gr_detail', gr_id=gr.id) }}" class="fw-bold text-decoration-none text-primary">
+                                    {{ gr.gr_number }}
+                                </a>
+                            </td>
+                            <td><code>{{ gr.delivery_order_number }}</code></td>
+                            <td>{{ gr.received_date | format_date }}</td>
+                            <td class="text-center">
+                                {% if gr.status == 'Complete' %}
+                                    <span class="badge-status badge-approved"><i class="bi bi-check2-all"></i> Lengkap</span>
+                                {% else %}
+                                    <span class="badge-status badge-partial"><i class="bi bi-hourglass-split"></i> Sebagian</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('gr_detail', gr_id=gr.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                                    <i class="bi bi-eye"></i> Detail
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Belum ada dokumen GR yang tercatat.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% else %}
+                    <thead>
+                        <tr>
+                            <th>No. PO</th>
+                            <th>Vendor Rekanan</th>
+                            <th class="text-end">Total Nilai PO</th>
+                            <th class="text-center">Status PO</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for po in recent_pos %}
+                        <tr class="stagger-row">
+                            <td>
+                                <a href="{{ url_for('po_detail', po_id=po.id) }}" class="fw-bold text-decoration-none text-primary">
+                                    {{ po.po_number }}
+                                </a>
+                            </td>
+                            <td class="fw-semibold text-dark text-truncate" style="max-width: 150px;" title="{{ po.vendor_name }}">{{ po.vendor_name }}</td>
+                            <td class="text-end fw-bold text-dark">{{ po.total_amount | format_currency }}</td>
+                            <td class="text-center">
+                                {% if po.status == 'Issued' %}
+                                    <span class="badge-status badge-issued"><i class="bi bi-send"></i> Issued</span>
+                                {% elif po.status == 'Partially Received' %}
+                                    <span class="badge-status badge-partial"><i class="bi bi-pie-chart"></i> Partial</span>
+                                {% elif po.status == 'Received' %}
+                                    <span class="badge-status badge-received"><i class="bi bi-box-seam"></i> Received</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('po_detail', po_id=po.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Buka Detail PO">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Belum ada Purchase Order terkait.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('roleDynamicChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ current_chart.labels | tojson }},
+                datasets: [{
+                    data: {{ current_chart.data | tojson }},
+                    backgroundColor: {{ current_chart.colors | tojson }},
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 16
+                        }
+                    }
+                },
+                cutout: '72%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

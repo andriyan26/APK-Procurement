@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}Tinjauan Persetujuan PR {{ pr.pr_number }} - PROCURE-APP{% endblock %}
+{% block page_title %}Tinjauan Persetujuan Pengadaan{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <!-- DETAIL PENGAJUAN PR CARD -->
+        <div class="card card-custom p-4 mb-4 animate-reveal delay-1">
+            <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-4 border-bottom gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning text-dark p-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 52px; height: 52px;">
+                        <i class="bi bi-clipboard2-check-fill fs-2 text-white"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h4 class="fw-bold mb-0 text-dark">{{ pr.pr_number }}</h4>
+                            <span class="badge-status badge-pending"><i class="bi bi-clock-history"></i> Menunggu Keputusan Anda</span>
+                        </div>
+                        <small class="text-muted">Diajukan oleh: <strong>{{ pr.requester.full_name }}</strong> &bull; Divisi: <strong>{{ pr.department }}</strong></small>
+                    </div>
+                </div>
+                <a href="{{ url_for('approval_list') }}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Antrean Approval
+                </a>
+            </div>
+
+            <!-- RINGKASAN INFORMASI PENGAJUAN -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border h-100">
+                        <span class="text-muted small fw-semibold d-block mb-1"><i class="bi bi-calendar-event me-1 text-primary"></i> Tanggal Diajukan:</span>
+                        <strong class="text-dark fs-6">{{ pr.request_date | format_date }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border h-100">
+                        <span class="text-muted small fw-semibold d-block mb-1"><i class="bi bi-calendar-check me-1 text-danger"></i> Target Dibutuhkan:</span>
+                        <strong class="text-dark fs-6">{{ pr.required_date | format_date }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-primary-subtle border border-primary-subtle rounded-3 h-100">
+                        <span class="text-primary-emphasis small fw-bold d-block mb-1"><i class="bi bi-cash-stack me-1"></i> Total Estimasi Anggaran:</span>
+                        <h4 class="fw-bold text-primary mb-0">{{ pr.total_estimated_amount | format_currency }}</h4>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <span class="text-muted small fw-bold text-uppercase d-block mb-1"><i class="bi bi-chat-left-quote me-1 text-primary"></i> Keperluan & Justifikasi Pengadaan:</span>
+                        <div class="text-dark fw-medium">{{ pr.purpose }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RINCIAN BARANG -->
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-boxes me-2 text-primary"></i>Rincian Item Barang yang Diajukan</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">No</th>
+                            <th>Nama Barang / Jasa</th>
+                            <th>Spesifikasi Detail</th>
+                            <th class="text-center" style="width: 100px;">Qty</th>
+                            <th class="text-center" style="width: 100px;">Satuan</th>
+                            <th class="text-end" style="width: 180px;">Est. Harga Satuan</th>
+                            <th class="text-end" style="width: 180px;">Subtotal (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in pr.items %}
+                        <tr>
+                            <td class="text-center text-muted fw-bold">{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ item.item_name }}</td>
+                            <td class="small text-muted">{{ item.specification or '-' }}</td>
+                            <td class="text-center fw-bold fs-6">{{ item.quantity }}</td>
+                            <td class="text-center"><span class="badge bg-light text-dark border">{{ item.unit }}</span></td>
+                            <td class="text-end">{{ item.estimated_price | format_currency }}</td>
+                            <td class="text-end fw-bold text-primary">{{ item.subtotal | format_currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light">
+                            <td colspan="6" class="text-end fw-bold fs-6">Grand Total Estimasi Anggaran:</td>
+                            <td class="text-end fw-bold fs-5 text-primary">{{ pr.total_estimated_amount | format_currency }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- FORM KEPUTUSAN APPROVAL DENGAN MODAL KONFIRMASI MODERN (GAMBAR KE-4 FIX) -->
+            <div class="border-top pt-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="bg-warning text-dark p-2 rounded-2 d-flex align-items-center justify-content-center shadow-sm">
+                        <i class="bi bi-shield-check fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Keputusan Persetujuan (Approval Decision)</h5>
+                        <small class="text-muted">Sebagai Approver berwenang, Anda dapat menyetujui atau menolak permohonan pengadaan ini.</small>
+                    </div>
+                </div>
+                
+                <form method="POST" action="{{ url_for('approval_review', pr_id=pr.id) }}" id="formApproval">
+                    <input type="hidden" name="action" id="actionInput" value="">
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">
+                            Catatan / Rekomendasi Persetujuan / Alasan Penolakan:
+                        </label>
+                        <textarea name="approval_notes" id="approvalNotes" class="form-control" rows="3" placeholder="Masukkan catatan atau instruksi khusus untuk tim pengadaan dan pemohon... (Wajib diisi jika menolak pengajuan)"></textarea>
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Catatan ini akan tersimpan permanen dalam riwayat transaksi pengadaan.</small>
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3 pt-2">
+                        <a href="{{ url_for('approval_list') }}" class="btn btn-light border px-4 py-2" style="border-radius: 10px;">Batal</a>
+                        
+                        <!-- Tombol Tolak (Reject) Interaktif -->
+                        <button type="button" id="btnReject" class="btn btn-outline-danger px-4 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" style="border-radius: 10px;">
+                            <i class="bi bi-x-circle-fill"></i>
+                            <span>Tolak Pengajuan (Reject)</span>
+                        </button>
+                        
+                        <!-- Tombol Setujui (Approve) Interaktif -->
+                        <button type="button" id="btnApprove" class="btn btn-success px-4 py-2 fw-bold shadow d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                            <i class="bi bi-check-circle-fill fs-6"></i>
+                            <span>Setujui Pengajuan (Approve)</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnApprove = document.getElementById('btnApprove');
+    const btnReject = document.getElementById('btnReject');
+    const formApproval = document.getElementById('formApproval');
+    const actionInput = document.getElementById('actionInput');
+    const notesInput = document.getElementById('approvalNotes');
+
+    const prNumber = "{{ pr.pr_number }}";
+    const prRequester = "{{ pr.requester.full_name }}";
+    const prDept = "{{ pr.department }}";
+    const prTotal = "{{ pr.total_estimated_amount | format_currency }}";
+    const prPurpose = "{{ pr.purpose | replace('\"', '\\\"') }}";
+
+    // ============================================================
+    // 1. MODAL KONFIRMASI MODERN UNTUK APPROVE (GAMBAR KE-4 FIX)
+    // ============================================================
+    if (btnApprove) {
+        btnApprove.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: '<span style="color: #0f172a; font-weight: 800; font-size: 1.35rem;">Konfirmasi Persetujuan Pengadaan</span>',
+                html: `
+                    <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 12px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">NOMOR PR:</span>
+                            <span style="font-weight: 800; color: #2563eb; background: #dbeafe; padding: 2px 8px; border-radius: 6px; font-size: 0.85rem;">${prNumber}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+                            Pemohon: <strong>${prRequester}</strong> (${prDept})
+                        </div>
+                        <div style="font-size: 0.85rem; color: #334155; margin-bottom: 10px;">
+                            Keperluan: <em>"${prPurpose}"</em>
+                        </div>
+                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: #1e293b;">Total Estimasi:</span>
+                            <span style="font-weight: 800; color: #16a34a; font-size: 1.15rem;">${prTotal}</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.88rem; color: #475569; margin: 0; line-height: 1.5;">
+                        Apakah Anda yakin ingin <strong>MENYETUJUI</strong> pengajuan ini?<br>
+                        <small style="color: #64748b;">Setelah disetujui, alur pengadaan akan langsung diteruskan ke tim Purchasing untuk pembuatan Purchase Order (PO).</small>
+                    </p>
+                `,
+                icon: 'question',
+                iconColor: '#16a34a',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-check-circle-fill me-1"></i> Ya, Setujui Sekarang!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                backdrop: `rgba(15, 23, 42, 0.65)`,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0 p-4',
+                    confirmButton: 'btn btn-success px-4 py-2 fw-bold rounded-3 shadow-sm',
+                    cancelButton: 'btn btn-secondary px-4 py-2 fw-semibold rounded-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    actionInput.value = 'approve';
+                    formApproval.submit();
+                }
+            });
+        });
+    }
+
+    // ============================================================
+    // 2. MODAL KONFIRMASI MODERN UNTUK REJECT (GAMBAR KE-4 FIX)
+    // ============================================================
+    if (btnReject) {
+        btnReject.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const currentNotes = notesInput ? notesInput.value.trim() : '';
+            if (!currentNotes) {
+                Swal.fire({
+                    title: '<span style="color: #b91c1c; font-weight: 800;">Catatan Penolakan Wajib Diisi</span>',
+                    html: `
+                        <p style="font-size: 0.9rem; color: #475569;">
+                            Harap masukkan alasan penolakan pada kolom <strong>Catatan / Rekomendasi</strong> di atas agar pemohon (<em>${prRequester}</em>) dapat merevisi atau memahami pertimbangan pimpinan.
+                        </p>
+                    `,
+                    icon: 'warning',
+                    iconColor: '#dc2626',
+                    confirmButtonColor: '#2563eb',
+                    confirmButtonText: '<i class="bi bi-pencil-square me-1"></i> Baik, Saya Isi Catatan',
+                    backdrop: `rgba(15, 23, 42, 0.65)`,
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg border-0 p-4',
+                        confirmButton: 'btn btn-primary px-4 py-2 fw-bold rounded-3'
+                    }
+                }).then(() => {
+                    notesInput.focus();
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: '<span style="color: #991b1b; font-weight: 800; font-size: 1.35rem;">Konfirmasi Penolakan PR</span>',
+                html: `
+                    <div style="text-align: left; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px; margin: 12px 0;">
+                        <div style="font-weight: 700; color: #991b1b; font-size: 0.95rem; margin-bottom: 4px;">
+                            ${prNumber} - ${prRequester}
+                        </div>
+                        <div style="font-size: 0.85rem; color: #7f1d1d;">
+                            Alasan: <em>"${currentNotes}"</em>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.88rem; color: #475569; margin: 0;">
+                        Apakah Anda yakin ingin <strong>MENOLAK</strong> pengajuan ini?<br>
+                        <small style="color: #64748b;">Pengajuan yang ditolak tidak akan dapat diproses ke penerbitan PO.</small>
+                    </p>
+                `,
+                icon: 'warning',
+                iconColor: '#dc2626',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-x-circle-fill me-1"></i> Ya, Tolak Pengajuan Ini',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                backdrop: `rgba(15, 23, 42, 0.65)`,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0 p-4',
+                    confirmButton: 'btn btn-danger px-4 py-2 fw-bold rounded-3 shadow-sm',
+                    cancelButton: 'btn btn-secondary px-4 py-2 fw-semibold rounded-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    actionInput.value = 'reject';
+                    formApproval.submit();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

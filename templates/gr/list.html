@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Penerimaan Barang (Goods Receipt) - PROCURE-APP{% endblock %}
+{% block page_title %}Penerimaan Barang (Goods Receipt){% endblock %}
+
+{% block content %}
+<!-- HEADER ACTION BAR -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 animate-reveal delay-1">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-success-subtle text-success fw-bold" style="font-size: 0.75rem;">Modul Logistik & Pergudangan</span>
+            <span class="badge bg-light text-secondary border" style="font-size: 0.72rem;">{{ stats.total }} Dokumen GR Tercatat</span>
+        </div>
+        <h4 class="fw-bold mb-1 text-dark">Daftar Penerimaan Barang Gudang (Goods Receipt)</h4>
+        <p class="text-muted small mb-0">Pencatatan verifikasi fisik barang yang tiba di gudang berdasarkan Purchase Order dan Surat Jalan vendor rekanan.</p>
+    </div>
+    {% if current_user.role in ['Warehouse', 'Admin'] %}
+    <div>
+        <a href="{{ url_for('gr_create') }}" class="btn btn-primary fw-bold shadow-sm px-3 py-2 d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+            <i class="bi bi-box-arrow-in-down fs-5"></i>
+            <span>Catat Penerimaan Barang Baru</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ============================================================
+     KARTU KPI & METRIK GUDANG (ANTI-OVERFLOW & PRESISI 1366px)
+     ============================================================ -->
+<div class="row g-3 mb-4 animate-reveal delay-1">
+    <!-- Card 1: Total Penerimaan GR -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-primary">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Total Penerimaan (GR)</span>
+                <div class="kpi-value text-dark">{{ stats.total }}</div>
+                <div class="kpi-subtext">Dokumen fisik gudang</div>
+            </div>
+            <div class="kpi-icon-box bg-primary-subtle text-primary">
+                <i class="bi bi-box-seam-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Menunggu Kedatangan Fisik PO -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-warning">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Menunggu Kedatangan</span>
+                <div class="kpi-value text-warning-emphasis">{{ stats.waiting_po }}</div>
+                <div class="kpi-subtext">PO siap diverifikasi</div>
+            </div>
+            <div class="kpi-icon-box bg-warning-subtle text-warning-emphasis">
+                <i class="bi bi-truck"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Penerimaan Lengkap (Complete) -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-success">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Penerimaan Lengkap</span>
+                <div class="kpi-value text-success">{{ stats.complete }}</div>
+                <div class="kpi-subtext">100% kuantitas sesuai</div>
+            </div>
+            <div class="kpi-icon-box bg-success-subtle text-success">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Penerimaan Bertahap (Partial) -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-info">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Penerimaan Bertahap</span>
+                <div class="kpi-value text-info-emphasis">{{ stats.partial }}</div>
+                <div class="kpi-subtext">Menunggu sisa kiriman</div>
+            </div>
+            <div class="kpi-icon-box bg-info-subtle text-info-emphasis">
+                <i class="bi bi-pie-chart-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SECTION: PO MENUNGGU KEDATANGAN FISIK BARANG DI GUDANG
+     ============================================================ -->
+{% if open_pos and open_pos|length > 0 %}
+<div class="card bg-warning-subtle border-warning-subtle p-3 mb-4 shadow-sm animate-reveal delay-2" style="border-radius: 14px;">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-bell-fill me-1"></i>Antrean Gudang</span>
+            <h6 class="fw-bold mb-0 text-warning-emphasis">
+                {{ open_pos|length }} Purchase Order Menunggu Kedatangan Fisik Barang di Gudang
+            </h6>
+        </div>
+        <small class="text-muted fw-semibold">Klik "Terima Barang" saat vendor tiba mengantar paket</small>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered bg-white mb-0 rounded-2 overflow-hidden align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 17%;">No. PO</th>
+                    <th style="width: 25%;">Vendor Rekanan</th>
+                    <th style="width: 17%;">Tgl Estimasi Tiba</th>
+                    <th class="text-end" style="width: 18%;">Nilai PO</th>
+                    <th class="text-center" style="width: 11%;">Status PO</th>
+                    <th class="text-center" style="width: 12%;">Aksi Cepat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for opo in open_pos %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('po_detail', po_id=opo.id) }}" class="fw-bold text-primary text-decoration-none">
+                            {{ opo.po_number }}
+                        </a>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ opo.vendor_name }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-calendar-event me-1 text-primary"></i>{{ opo.delivery_estimate_date | format_date }}
+                        </span>
+                    </td>
+                    <td class="text-end fw-bold text-dark">{{ opo.total_amount | format_currency }}</td>
+                    <td class="text-center">
+                        {% if opo.status == 'Issued' %}
+                            <span class="badge bg-primary">Issued</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Partial</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('gr_create', po_id=opo.id) }}" class="btn btn-sm btn-success py-1 px-2 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;">
+                            <i class="bi bi-box-arrow-in-down"></i>
+                            <span>Terima Barang</span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- ============================================================
+     FILTER TABS & SEARCH DENGAN NAV PILLS RAPI (ANTI-MELAR)
+     ============================================================ -->
+<div class="card card-custom p-3 mb-4 animate-reveal delay-2">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <!-- Filter Navigation Pills Kiri -->
+        <div class="filter-pills-wrap">
+            <a href="{{ url_for('gr_list') }}" class="filter-pill-item {% if not current_status %}active{% endif %}">
+                <span>Semua GR</span>
+                <span class="filter-pill-badge">{{ stats.total }}</span>
+            </a>
+            <a href="{{ url_for('gr_list', status='Complete') }}" class="filter-pill-item {% if current_status == 'Complete' %}active success{% endif %}">
+                <i class="bi bi-check2-circle"></i>
+                <span>Lengkap (Complete)</span>
+                <span class="filter-pill-badge">{{ stats.complete }}</span>
+            </a>
+            <a href="{{ url_for('gr_list', status='Partial') }}" class="filter-pill-item {% if current_status == 'Partial' %}active warning{% endif %}">
+                <i class="bi bi-pie-chart"></i>
+                <span>Sebagian (Partial)</span>
+                <span class="filter-pill-badge">{{ stats.partial }}</span>
+            </a>
+        </div>
+
+        <!-- Kolom Pencarian Kanan Proporsional -->
+        <div class="search-filter-box" style="max-width: 280px; min-width: 180px;">
+            <form method="GET" action="{{ url_for('gr_list') }}" class="d-flex gap-1">
+                {% if current_status %}
+                    <input type="hidden" name="status" value="{{ current_status }}">
+                {% endif %}
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Cari No. GR, DO, PO..." value="{{ search_query }}">
+                    <button class="btn btn-primary px-3 fw-semibold" type="submit">Cari</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('gr_list', status=current_status) }}" class="btn btn-outline-secondary" title="Reset Pencarian"><i class="bi bi-x-lg"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     TABEL RIWAYAT GOODS RECEIPT DENGAN DATA TIMBUL BERTAHAP
+     ============================================================ -->
+<div class="card card-custom p-0 animate-reveal delay-3" style="border-radius: 14px; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 14%;">No. GR</th>
+                    <th style="width: 17%;">No. Surat Jalan (DO)</th>
+                    <th style="width: 14%;">Ref. No. PO</th>
+                    <th style="width: 18%;">Vendor</th>
+                    <th style="width: 12%;">Tanggal Tiba</th>
+                    <th style="width: 13%;">Penerima Gudang</th>
+                    <th class="text-center" style="width: 12%;">Status</th>
+                    <th class="text-center" style="width: 10%;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gr in grs %}
+                <tr class="stagger-row" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+                    <td>
+                        <a href="{{ url_for('gr_detail', gr_id=gr.id) }}" class="fw-bold text-decoration-none text-primary d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-file-earmark-check"></i>
+                            <span>{{ gr.gr_number }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <code class="fw-bold text-dark bg-light px-2 py-1 rounded border">{{ gr.delivery_order_number }}</code>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('po_detail', po_id=gr.po_id) }}" class="text-secondary fw-semibold text-decoration-none">
+                            <i class="bi bi-receipt me-1 text-primary"></i>{{ gr.po.po_number }}
+                        </a>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ gr.po.vendor_name }}</td>
+                    <td>
+                        <span class="small text-muted">
+                            <i class="bi bi-calendar3 me-1"></i>{{ gr.received_date | format_date }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="badge bg-secondary-subtle text-secondary py-1 px-1 rounded-circle" style="font-size: 0.65rem;">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                            <span class="small fw-semibold text-dark">{{ gr.warehouse_officer.full_name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        {% if gr.status == 'Complete' %}
+                            <span class="badge-status badge-approved"><i class="bi bi-check2-all"></i> Lengkap</span>
+                        {% else %}
+                            <span class="badge-status badge-partial"><i class="bi bi-hourglass-split"></i> Sebagian</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('gr_detail', gr_id=gr.id) }}" class="btn btn-sm btn-outline-primary px-2 py-1 fw-semibold d-inline-flex align-items-center gap-1" style="border-radius: 6px;" title="Lihat Bukti Terima Gudang">
+                            <i class="bi bi-eye-fill"></i>
+                            <span>Detail GR</span>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <div class="my-3">
+                            <i class="bi bi-box-seam fs-1 text-secondary d-block mb-2 opacity-50"></i>
+                            <h6 class="fw-bold text-dark mb-1">Belum Ada Dokumen Goods Receipt</h6>
+                            <p class="small text-muted mb-3">Dokumen penerimaan barang fisik gudang yang Anda buat akan tercatat di sini.</p>
+                            {% if current_user.role in ['Warehouse', 'Admin'] %}
+                            <a href="{{ url_for('gr_create') }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-lg me-1"></i> Catat Penerimaan Pertama
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

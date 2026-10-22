@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+
+{% block title %}Detail PR {{ pr.pr_number }} - PROCURE-APP{% endblock %}
+{% block page_title %}Detail Purchase Requisition{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-11">
+        <!-- BREADCRUMB & TOP CONTROLS -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 btn-no-print animate-reveal delay-1">
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('pr_list') }}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar PR
+                </a>
+                <span class="text-muted">/</span>
+                <span class="fw-bold text-dark">{{ pr.pr_number }}</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-outline-secondary px-3 py-2 fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                    <i class="bi bi-printer-fill fs-6"></i>
+                    <span>Cetak Form PR (PDF)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- LIFECYCLE PROGRESS TRACKER (SANGAT BERMAKNA) -->
+        <div class="card card-custom p-4 mb-4 btn-no-print animate-reveal delay-2">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-diagram-3-fill me-2 text-primary"></i>Alur Proses Pengadaan (Procurement Lifecycle)</h6>
+                {% if pr.status == 'PO Created' %}
+                    <span class="badge bg-info-subtle text-info-emphasis fw-bold"><i class="bi bi-receipt me-1"></i>Purchase Order (PO) Telah Terbit</span>
+                {% elif pr.status == 'Approved' %}
+                    <span class="badge bg-success-subtle text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Disetujui Pimpinan (Menunggu PO)</span>
+                {% elif pr.status == 'Rejected' %}
+                    <span class="badge bg-danger-subtle text-danger fw-bold"><i class="bi bi-x-circle-fill me-1"></i>Pengajuan Ditolak</span>
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold"><i class="bi bi-clock-history me-1"></i>Menunggu Verifikasi & Persetujuan Approver</span>
+                {% endif %}
+            </div>
+
+            <div class="procurement-flow-track px-4">
+                <div class="flow-line"></div>
+                <!-- Step 1: PR Diajukan -->
+                <div class="flow-step completed">
+                    <div class="flow-circle"><i class="bi bi-check-lg"></i></div>
+                    <div class="flow-title">1. PR Diajukan</div>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ pr.request_date | format_date }} &bull; {{ pr.requester.full_name }}</small>
+                </div>
+                <!-- Step 2: Keputusan Approver -->
+                <div class="flow-step {% if pr.status in ['Approved', 'PO Created'] %}completed{% elif pr.status == 'Rejected' %}active{% else %}active{% endif %}">
+                    <div class="flow-circle">
+                        {% if pr.status in ['Approved', 'PO Created'] %}<i class="bi bi-check-lg"></i>
+                        {% elif pr.status == 'Rejected' %}<i class="bi bi-x-lg text-danger"></i>
+                        {% else %}<i class="bi bi-hourglass-split"></i>{% endif %}
+                    </div>
+                    <div class="flow-title">2. Otorisasi Approver</div>
+                    <small class="text-muted" style="font-size: 0.72rem;">
+                        {% if pr.status in ['Approved', 'PO Created'] %}Disetujui: {{ pr.approver.full_name if pr.approver else 'Approver' }}
+                        {% elif pr.status == 'Rejected' %}Ditolak Approver
+                        {% else %}Menunggu Tinjauan{% endif %}
+                    </small>
+                </div>
+                <!-- Step 3: Purchase Order -->
+                <div class="flow-step {% if pr.status == 'PO Created' %}completed{% else %}{% endif %}">
+                    <div class="flow-circle"><i class="bi bi-receipt"></i></div>
+                    <div class="flow-title">3. Penerbitan PO</div>
+                    <small class="text-muted" style="font-size: 0.72rem;">
+                        {% if pr.status == 'PO Created' %}PO Diterbitkan ke Vendor{% else %}Menunggu PO{% endif %}
+                    </small>
+                </div>
+                <!-- Step 4: Penerimaan Gudang (GR) -->
+                <div class="flow-step">
+                    <div class="flow-circle"><i class="bi bi-truck"></i></div>
+                    <div class="flow-title">4. Fisik Tiba (GR)</div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Verifikasi Gudang</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             DOKUMEN RESMI PURCHASE REQUISITION (PRESISI & PRINT-PERFECT)
+             ============================================================ -->
+        <div class="card card-custom doc-official-card p-4 p-md-5 mb-4 animate-reveal delay-3" style="border-radius: 18px;">
+            
+            <!-- KOP SURAT RESMI KORPORAT -->
+            <div class="doc-kop-surat">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="doc-logo-box">
+                            <i class="bi bi-building-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-dark doc-company-name">PT NUSANTARA DIGITAL INDONESIA</h4>
+                            <div class="doc-company-dept">DIVISI PENGADAAN BARANG & JASA (PROCUREMENT MANAGEMENT DIVISION)</div>
+                            <div class="doc-company-address">
+                                Gedung Menara Sentral Lt. 10, Jl. Jend. Sudirman Kav. 25, Jakarta Selatan 12920<br>
+                                Telp: (021) 500-8899 &bull; Fax: (021) 500-8890 &bull; Email: procurement@nusantaradigital.co.id
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CAP RESMI STATUS OTORISASI PR -->
+                    <div class="doc-stamp-box text-center {% if pr.status == 'PO Created' %}stamp-blue{% elif pr.status == 'Pending' %}stamp-warning{% elif pr.status == 'Rejected' %}stamp-danger{% endif %}">
+                        <div class="doc-stamp-inner">
+                            {% if pr.status == 'Approved' %}
+                                <i class="bi bi-patch-check-fill"></i>
+                                <div class="stamp-title">OFFICIALLY APPROVED</div>
+                                <div class="stamp-sub">BUDGET AUTHORIZED</div>
+                                <div class="stamp-date">{{ pr.approval_date.strftime('%d/%m/%Y') if pr.approval_date else 'VERIFIED' }}</div>
+                            {% elif pr.status == 'PO Created' %}
+                                <i class="bi bi-receipt"></i>
+                                <div class="stamp-title">PO ISSUED & PROCESSED</div>
+                                <div class="stamp-sub">PURCHASING VERIFIED</div>
+                                <div class="stamp-date">PROCUREMENT ORDER</div>
+                            {% elif pr.status == 'Rejected' %}
+                                <i class="bi bi-x-circle-fill"></i>
+                                <div class="stamp-title">REVISION REQUIRED</div>
+                                <div class="stamp-sub">PR REJECTED</div>
+                                <div class="stamp-date">{{ pr.approval_date.strftime('%d/%m/%Y') if pr.approval_date else 'REJECTED' }}</div>
+                            {% else %}
+                                <i class="bi bi-hourglass-split"></i>
+                                <div class="stamp-title">SUBMITTED FOR REVIEW</div>
+                                <div class="stamp-sub">PENDING APPROVAL</div>
+                                <div class="stamp-date">{{ pr.request_date | format_date }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GARIS GANDA KOP SURAT RESMI -->
+                <div class="doc-kop-divider"></div>
+            </div>
+
+            <!-- JUDUL DOKUMEN & NOMOR PR -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom">
+                <div>
+                    <h3 class="fw-bold text-primary mb-0" style="letter-spacing: -0.01em;">PURCHASE REQUISITION</h3>
+                    <small class="text-muted fw-semibold">Formulir Permohonan Pengadaan Barang & Jasa Resmi Perusahaan</small>
+                </div>
+                <div class="text-end">
+                    <div class="fs-4 fw-bold text-dark">{{ pr.pr_number }}</div>
+                    <div>
+                        {% if pr.status == 'Pending' %}
+                            <span class="badge-status badge-pending"><i class="bi bi-clock-history"></i> Status: Menunggu Approval</span>
+                        {% elif pr.status == 'Approved' %}
+                            <span class="badge-status badge-approved"><i class="bi bi-check-circle-fill"></i> Status: Disetujui (Approved)</span>
+                        {% elif pr.status == 'Rejected' %}
+                            <span class="badge-status badge-rejected"><i class="bi bi-x-circle-fill"></i> Status: Ditolak (Rejected)</span>
+                        {% elif pr.status == 'PO Created' %}
+                            <span class="badge-status badge-pocreated"><i class="bi bi-receipt"></i> Status: PO Diterbitkan</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BANNER KHUSUS ROLE PURCHASING JIKA STATUS APPROVED -->
+            {% if current_user.role in ['Purchasing', 'Admin'] and pr.status == 'Approved' %}
+            <div class="alert alert-success border-success-subtle shadow-sm p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 btn-no-print">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill fs-3 text-success"></i>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-success-emphasis">PR Telah Disetujui Approver &bull; Siap Diterbitkan Purchase Order (PO)</h6>
+                        <small class="text-muted">Sebagai Tim Purchasing, Anda dapat langsung membuatkan Purchase Order resmi ke rekanan vendor.</small>
+                    </div>
+                </div>
+                <a href="{{ url_for('po_create', pr_id=pr.id) }}" class="btn btn-success fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                    <i class="bi bi-receipt fs-5"></i>
+                    <span>Terbitkan Purchase Order (PO)</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- GRID DUA KOLOM: DATA PEMOHON & KEBUTUHAN PENGADAAN -->
+            <div class="row g-3 mb-3 doc-meta-grid">
+                <!-- Kolom 1: Data Pemohon -->
+                <div class="col-6">
+                    <div class="doc-info-box h-100">
+                        <div class="doc-info-header">
+                            <i class="bi bi-person-badge-fill me-1 text-primary"></i> DATA PEMOHON (REQUESTER):
+                        </div>
+                        <div class="doc-info-body">
+                            <h6 class="fw-bold text-dark mb-1">{{ pr.requester.full_name }}</h6>
+                            <div class="small doc-text-compact">
+                                <div><span class="text-muted">Departemen / Divisi:</span> <strong class="text-primary">{{ pr.department }}</strong></div>
+                                <div><span class="text-muted">Username Pengaju:</span> <strong class="text-dark">{{ pr.requester.username }}</strong></div>
+                                <div class="mt-2 pt-2 border-top">
+                                    <span class="text-muted d-block fw-semibold">Keperluan & Justifikasi Pengadaan:</span>
+                                    <div class="text-dark fw-medium mt-1">{{ pr.purpose }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom 2: Jadwal & Keputusan Penyetuju -->
+                <div class="col-6">
+                    <div class="doc-info-box h-100">
+                        <div class="doc-info-header">
+                            <i class="bi bi-calendar2-check me-1 text-primary"></i> JADWAL & OTORISASI ANGGARAN:
+                        </div>
+                        <div class="doc-info-body">
+                            <table class="table table-sm table-borderless small mb-0 doc-text-compact">
+                                <tr>
+                                    <td class="text-muted" style="width: 140px;">Tanggal Pengajuan:</td>
+                                    <td class="fw-bold text-dark">{{ pr.request_date | format_date }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Target Dibutuhkan:</td>
+                                    <td class="fw-bold text-danger">{{ pr.required_date | format_date }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Total Estimasi Biaya:</td>
+                                    <td class="fw-bold text-primary fs-6">{{ pr.total_estimated_amount | format_currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Pejabat Approver:</td>
+                                    <td class="fw-semibold text-dark">{{ pr.approver.full_name if pr.approver else 'Pimpinan Departemen' }}</td>
+                                </tr>
+                                {% if pr.approval_notes %}
+                                <tr>
+                                    <td class="text-muted">Catatan Approver:</td>
+                                    <td class="fst-italic text-secondary">{{ pr.approval_notes }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABEL ITEM BARANG / JASA YANG DIAJUKAN -->
+            <div class="doc-items-section mb-3">
+                <table class="table table-bordered doc-table-print align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 40px;">No</th>
+                            <th>Nama Barang / Jasa</th>
+                            <th>Spesifikasi Teknis</th>
+                            <th class="text-center" style="width: 80px;">Qty</th>
+                            <th class="text-center" style="width: 80px;">Satuan</th>
+                            <th class="text-end" style="width: 160px;">Est. Harga Satuan</th>
+                            <th class="text-end" style="width: 170px;">Subtotal (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in pr.items %}
+                        <tr>
+                            <td class="text-center fw-bold text-muted">{{ loop.index }}</td>
+                            <td class="fw-bold text-dark">{{ item.item_name }}</td>
+                            <td class="small text-muted">{{ item.specification or '-' }}</td>
+                            <td class="text-center fw-bold">{{ item.quantity }}</td>
+                            <td class="text-center">{{ item.unit }}</td>
+                            <td class="text-end">{{ item.estimated_price | format_currency }}</td>
+                            <td class="text-end fw-bold text-dark">{{ item.subtotal | format_currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light">
+                            <td colspan="6" class="text-end fw-bold">Total Estimasi Anggaran Pengadaan (PR):</td>
+                            <td class="text-end fw-bold text-primary fs-6">{{ pr.total_estimated_amount | format_currency }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- ============================================================
+                 LEMBAR 3 TANDA TANGAN PENGESAHAN DOKUMEN CETAK
+                 ============================================================ -->
+            <div class="doc-signatures-section mt-4 pt-2">
+                <div class="row text-center g-3">
+                    <!-- 1. Pemohon / Requester -->
+                    <div class="col-4">
+                        <div class="doc-sig-card">
+                            <div class="doc-sig-role">Diajukan Oleh (Requester):</div>
+                            <div class="doc-sig-space"></div>
+                            <div class="doc-sig-name">{{ pr.requester.full_name }}</div>
+                            <div class="doc-sig-title">{{ pr.department }} Staff</div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Pimpinan / Approver -->
+                    <div class="col-4">
+                        <div class="doc-sig-card">
+                            <div class="doc-sig-role">Disetujui Oleh (Approver):</div>
+                            <div class="doc-sig-space"></div>
+                            <div class="doc-sig-name">{{ pr.approver.full_name if pr.approver else 'Pimpinan Divisi' }}</div>
+                            <div class="doc-sig-title">IT Management / Dept Head</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Purchasing Specialist -->
+                    <div class="col-4">
+                        <div class="doc-sig-card">
+                            <div class="doc-sig-role">Diterima Tim Purchasing:</div>
+                            <div class="doc-sig-space"></div>
+                            <div class="doc-sig-name">Divisi Pengadaan</div>
+                            <div class="doc-sig-title">Procurement Specialist</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER RESMI DOKUMEN CETAK -->
+                <div class="doc-print-footer text-center mt-3 pt-2 border-top text-muted small">
+                    <small>Dokumen Purchase Requisition ini sah dan diverifikasi secara elektronik melalui Aplikasi Procurement PT Nusantara Digital Indonesia &bull; Halaman 1 dari 1</small>
+                </div>
+            </div>
+
+            <!-- RELASI KE PURCHASE ORDER JIKA SUDAH TERBIT (HANYA DI WEB) -->
+            {% if pr.purchase_orders and pr.purchase_orders|length > 0 %}
+            <div class="card bg-info-subtle border-info-subtle p-3 mt-4 rounded-3 shadow-sm btn-no-print">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-info-emphasis mb-0">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Purchase Order (PO) Terkait yang Telah Terbit:
+                    </h6>
+                    <span class="badge bg-info text-dark">{{ pr.purchase_orders|length }} PO Diterbitkan</span>
+                </div>
+                <div class="table-responsive bg-white rounded-2 border">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>No. PO</th>
+                                <th>Vendor Rekanan</th>
+                                <th>Tanggal PO</th>
+                                <th>Syarat Pembayaran</th>
+                                <th class="text-end">Nilai PO (Rp)</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for po in pr.purchase_orders %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ po.po_number }}</td>
+                                <td class="fw-semibold">{{ po.vendor_name }}</td>
+                                <td>{{ po.po_date | format_date }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ po.payment_terms }}</span></td>
+                                <td class="text-end fw-bold">{{ po.total_amount | format_currency }}</td>
+                                <td class="text-center"><span class="badge bg-primary text-white">{{ po.status }}</span></td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('po_detail', po_id=po.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold">
+                                        <i class="bi bi-eye"></i> Buka Dokumen PO
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ACTION BARIS BAWAH (HANYA DI WEB) -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-4 mt-4 border-top btn-no-print">
+                <div>
+                    {% if (current_user.role == 'Admin' or current_user.id == pr.requester_id) and pr.status in ['Pending', 'Rejected'] %}
+                    <form method="POST" action="{{ url_for('pr_delete', pr_id=pr.id) }}" id="formDeletePR" class="d-inline">
+                        <button type="button" id="btnDeletePR" class="btn btn-outline-danger btn-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                            <i class="bi bi-trash me-1"></i> Hapus Pengajuan PR
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-secondary px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                        <i class="bi bi-printer me-1"></i> Cetak Dokumen PR
+                    </button>
+
+                    <!-- Tombol untuk Approver -->
+                    {% if current_user.role in ['Approver', 'Admin'] and pr.status == 'Pending' %}
+                    <a href="{{ url_for('approval_review', pr_id=pr.id) }}" class="btn btn-warning text-dark px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                        <i class="bi bi-clipboard2-check-fill fs-6"></i>
+                        <span>Tinjau & Berikan Keputusan (Approval)</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Tombol untuk Purchasing -->
+                    {% if current_user.role in ['Purchasing', 'Admin'] and pr.status == 'Approved' %}
+                    <a href="{{ url_for('po_create', pr_id=pr.id) }}" class="btn btn-success px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="border-radius: 8px;">
+                        <i class="bi bi-receipt fs-6"></i>
+                        <span>Terbitkan Purchase Order (PO)</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnDeletePR = document.getElementById('btnDeletePR');
+    const formDeletePR = document.getElementById('formDeletePR');
+
+    if (btnDeletePR && formDeletePR) {
+        btnDeletePR.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Hapus Pengajuan PR?',
+                html: 'Apakah Anda yakin ingin menghapus dokumen <strong>{{ pr.pr_number }}</strong>?<br><small class="text-muted">Tindakan ini tidak dapat dibatalkan.</small>',
+                icon: 'warning',
+                iconColor: '#dc2626',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus Sekarang',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0',
+                    confirmButton: 'btn btn-danger px-4 py-2 fw-bold rounded-3',
+                    cancelButton: 'btn btn-secondary px-4 py-2 fw-semibold rounded-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    formDeletePR.submit();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

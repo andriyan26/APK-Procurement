@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Masuk - PROCURE-APP Enterprise</title>
+    <!-- Favicon Resmi PROCURE-APP (SVG Vector High-Res) -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.35);
+            --dark-canvas: #070b14;
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--dark-canvas);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(30, 58, 138, 0.28) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem 1rem;
+            color: #f8fafc;
+            position: relative;
+        }
+
+        /* Ambient Glow Effect */
+        .ambient-glow-1 {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            bottom: -120px;
+            right: -100px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Container Card Utama - Kompak & Presisi di Tengah Layar */
+        .login-card-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 980px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 22px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            margin: auto;
+        }
+
+        /* Panel Kiri: Brand & Pipeline Showcase */
+        .brand-panel {
+            background: linear-gradient(155deg, rgba(23, 42, 90, 0.95) 0%, rgba(11, 18, 38, 0.98) 100%);
+            padding: 1.85rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .badge-system {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #93c5fd;
+            letter-spacing: 0.02em;
+            width: fit-content;
+            margin-bottom: 0.85rem;
+        }
+
+        .brand-header-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-icon-box {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.35rem;
+            box-shadow: 0 8px 18px var(--primary-glow);
+            flex-shrink: 0;
+        }
+
+        .brand-heading {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            line-height: 1.15;
+            margin-bottom: 0;
+        }
+
+        .brand-description {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            margin-bottom: 0.65rem;
+        }
+
+        /* ============================================================
+           CIRCULAR PROCUREMENT CYCLE INFOGRAPHIC (SESUAI GAMBAR 3)
+           ============================================================ */
+        .procurement-cycle-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.25rem 0;
+            position: relative;
+        }
+
+        .cycle-svg-wrap {
+            width: 100%;
+            max-width: 360px;
+            height: auto;
+            filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+            overflow: visible;
+        }
+
+        .cycle-node-group {
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center;
+        }
+
+        .cycle-node-group:hover {
+            transform: scale(1.07);
+        }
+
+        .cycle-node-group:hover .node-circle-bg {
+            filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.7));
+        }
+
+        .center-hub-group {
+            transition: transform 0.3s ease;
+            transform-origin: 190px 170px;
+        }
+
+        .center-hub-group:hover {
+            transform: scale(1.03);
+        }
+
+        .panel-footer-info {
+            margin-top: 0.85rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        /* Panel Kanan: Form Login */
+        .form-panel {
+            padding: 1.85rem 2.25rem;
+            background: #ffffff;
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.2rem;
+        }
+
+        .form-subtitle {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1.15rem;
+        }
+
+        .form-group-wrap {
+            margin-bottom: 0.85rem;
+        }
+
+        .label-custom {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.3rem;
+        }
+
+        .input-box-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box-wrap i.prefix-icon {
+            position: absolute;
+            left: 0.9rem;
+            color: #94a3b8;
+            font-size: 1.05rem;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .form-input-field {
+            width: 100%;
+            height: 42px;
+            padding: 0.5rem 0.85rem 0.5rem 2.75rem;
+            font-size: 0.88rem;
+            font-family: var(--font-family);
+            color: #0f172a;
+            background-color: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input-field:focus {
+            outline: none;
+            background-color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .input-box-wrap:focus-within i.prefix-icon {
+            color: var(--primary);
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            padding: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-toggle-eye:hover {
+            color: #0f172a;
+        }
+
+        /* Widget Pengecekan Human - Compact & Sleek */
+        .human-verify-container {
+            background-color: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 11px;
+            padding: 0.55rem 0.85rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .human-verify-container.verified {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+        }
+
+        .human-verify-container.shake-error {
+            animation: shakeWidget 0.4s ease-in-out;
+            border-color: #f87171;
+            background-color: #fef2f2;
+        }
+
+        @keyframes shakeWidget {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .verify-trigger-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .verify-checkbox-custom {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .verify-trigger-box:hover .verify-checkbox-custom {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .verify-checkbox-custom.loading {
+            border-color: var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .verify-checkbox-custom.checked {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+        }
+
+        .verify-label-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.15;
+        }
+
+        .verify-label-sub {
+            font-size: 0.68rem;
+            color: #64748b;
+        }
+
+        .verify-badge-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-left: 0.75rem;
+            border-left: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .verify-badge-logo i {
+            font-size: 1.15rem;
+            color: var(--primary);
+        }
+
+        .verify-badge-logo span {
+            font-size: 0.58rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+        }
+
+        /* Tombol Submit */
+        .btn-submit-login {
+            height: 44px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.35);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-submit-login:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            box-shadow: 0 10px 20px -2px rgba(37, 99, 235, 0.45);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        .btn-submit-login:active {
+            transform: translateY(0);
+        }
+
+        .security-footer-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 0.85rem;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                padding: 1.5rem 1rem;
+            }
+            .brand-panel {
+                display: none;
+            }
+            .form-panel {
+                padding: 2.25rem 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient Blur Glow -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <div class="login-card-container">
+        <div class="row g-0">
+            <!-- PANEL KIRI: BRANDING & SIKLUS PENGADAAN -->
+            <div class="col-lg-6 brand-panel">
+                <div>
+                    <div class="badge-system">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Sistem Manajemen Pengadaan</span>
+                    </div>
+
+                    <div class="brand-header-wrap">
+                        <div class="brand-icon-box p-0 overflow-hidden d-flex align-items-center justify-content-center">
+                            <img src="{{ url_for('static', filename='img/favicon.svg') }}" alt="PROCURE-APP Logo" width="46" height="46" style="border-radius: 12px; object-fit: contain;">
+                        </div>
+                        <h1 class="brand-heading">PROCURE-APP</h1>
+                    </div>
+
+                    <p class="brand-description mb-2">
+                        Siklus alur pengadaan barang &amp; jasa terintegrasi secara transparan, otomatis, dan akuntabel.
+                    </p>
+
+                    <!-- CIRCULAR PROCUREMENT CYCLE INFOGRAPHIC (KONSEP GAMBAR 3) -->
+                    <div class="procurement-cycle-container">
+                        <svg class="cycle-svg-wrap" viewBox="0 0 380 340" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <!-- Drop Shadow untuk Node Medallion -->
+                                <filter id="nodeShadow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.38"/>
+                                </filter>
+                                <!-- Drop Shadow untuk Center Hub -->
+                                <filter id="hubShadow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#000000" flood-opacity="0.45"/>
+                                </filter>
+                                <!-- Gradients untuk 4 Segmen Warna -->
+                                <linearGradient id="gradOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#fb923c"/>
+                                    <stop offset="100%" stop-color="#ea580c"/>
+                                </linearGradient>
+                                <linearGradient id="gradRose" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#fb7185"/>
+                                    <stop offset="100%" stop-color="#e11d48"/>
+                                </linearGradient>
+                                <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#a855f7"/>
+                                    <stop offset="100%" stop-color="#7c3aed"/>
+                                </linearGradient>
+                                <linearGradient id="gradCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#22d3ee"/>
+                                    <stop offset="100%" stop-color="#0284c7"/>
+                                </linearGradient>
+                                <!-- Arrow Marker untuk Alur Perputaran Searah Jarum Jam -->
+                                <marker id="arrowHead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                    <path d="M 0 0 L 6 3 L 0 6 z" fill="rgba(255,255,255,0.45)"/>
+                                </marker>
+                            </defs>
+
+                            <!-- 1. LINTASAN LUAR PANDUAN DENGAN PANAH SIKLUS -->
+                            <circle cx="190" cy="170" r="148" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" stroke-dasharray="6,6"/>
+                            <path d="M 270 42 A 148 148 0 0 1 315 88" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" marker-end="url(#arrowHead)"/>
+                            <path d="M 334 212 A 148 148 0 0 1 292 278" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" marker-end="url(#arrowHead)"/>
+                            <path d="M 110 314 A 148 148 0 0 1 48 248" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" marker-end="url(#arrowHead)"/>
+                            <path d="M 44 116 A 148 148 0 0 1 96 46" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" marker-end="url(#arrowHead)"/>
+
+                            <!-- 2. SEGMEN DONUT 4 WARNA SIKLUS PENGADAAN -->
+                            <circle cx="190" cy="170" r="108" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="18"/>
+                            <!-- Segmen 01: Oranye (PR) -->
+                            <path d="M 218 66 A 108 108 0 0 1 294 142" fill="none" stroke="url(#gradOrange)" stroke-width="14" stroke-linecap="round"/>
+                            <!-- Segmen 02: Rose/Merah Muda (Approval) -->
+                            <path d="M 294 198 A 108 108 0 0 1 218 274" fill="none" stroke="url(#gradRose)" stroke-width="14" stroke-linecap="round"/>
+                            <!-- Segmen 03: Ungu/Violet (PO) -->
+                            <path d="M 162 274 A 108 108 0 0 1 86 198" fill="none" stroke="url(#gradPurple)" stroke-width="14" stroke-linecap="round"/>
+                            <!-- Segmen 04: Cyan/Biru Muda (GR) -->
+                            <path d="M 86 142 A 108 108 0 0 1 162 66" fill="none" stroke="url(#gradCyan)" stroke-width="14" stroke-linecap="round"/>
+
+                            <!-- 3. CENTER HUB MEDALLION (PERSIS GAMBAR 3) -->
+                            <g class="center-hub-group">
+                                <circle cx="190" cy="170" r="56" fill="#ffffff" filter="url(#hubShadow)"/>
+                                <circle cx="190" cy="170" r="51" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+                                <!-- Icon 3D Box Logo Center -->
+                                <g transform="translate(178, 126) scale(0.6)">
+                                    <polygon points="20,4 35,12 20,20 5,12" fill="#60a5fa"/>
+                                    <polygon points="5,12 20,20 20,38 5,30" fill="#2563eb"/>
+                                    <polygon points="20,20 35,12 35,30 20,38" fill="#1d4ed8"/>
+                                    <path d="M 12 18 L 18 24 L 28 14" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+                                </g>
+
+                                <!-- Teks Branding Tengah -->
+                                <text x="190" y="156" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="800" fill="#0f172a" letter-spacing="0.03em">
+                                    PROCURE<tspan fill="#2563eb">-APP</tspan>
+                                </text>
+                                <text x="190" y="168" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="7.5" font-weight="800" fill="#64748b" letter-spacing="0.1em">
+                                    ALUR PENGADAAN
+                                </text>
+                                <text x="190" y="179" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="7" font-weight="700" fill="#2563eb">
+                                    The Procurement Cycle
+                                </text>
+
+                                <!-- 4 Titik Warna Alur -->
+                                <circle cx="172" cy="189" r="3" fill="#ea580c"/>
+                                <circle cx="184" cy="189" r="3" fill="#e11d48"/>
+                                <circle cx="196" cy="189" r="3" fill="#7c3aed"/>
+                                <circle cx="208" cy="189" r="3" fill="#0284c7"/>
+                            </g>
+
+                            <!-- 4. KE-4 NODE MEDALLION LINGKARAN DENGAN NOMOR (01 - 04) -->
+
+                            <!-- NODE 01: ATAS (Purchase Requisition - Requester) -->
+                            <g class="cycle-node-group" id="node-pr">
+                                <rect x="173" y="14" width="34" height="17" rx="8.5" fill="url(#gradOrange)" filter="url(#nodeShadow)"/>
+                                <text x="190" y="26" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="800" fill="#ffffff">01</text>
+                                
+                                <circle class="node-circle-bg" cx="190" cy="62" r="32" fill="#ffffff" stroke="#fed7aa" stroke-width="2.5" filter="url(#nodeShadow)"/>
+                                
+                                <g transform="translate(180, 42) scale(0.9)">
+                                    <path d="M 4 2 L 14 2 L 18 6 L 18 20 L 4 20 Z" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <path d="M 14 2 L 14 6 L 18 6" fill="none" stroke="#ea580c" stroke-width="1.8"/>
+                                    <line x1="8" y1="10" x2="14" y2="10" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round"/>
+                                    <line x1="8" y1="14" x2="14" y2="14" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round"/>
+                                </g>
+
+                                <text x="190" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6.8" font-weight="800" fill="#0f172a">REQUISITION</text>
+                                <text x="190" y="80" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6" font-weight="700" fill="#ea580c">Pengajuan PR</text>
+                            </g>
+
+                            <!-- NODE 02: KANAN (Approval Pengadaan - Approver) -->
+                            <g class="cycle-node-group" id="node-app">
+                                <rect x="330" y="157" width="20" height="26" rx="10" fill="url(#gradRose)" filter="url(#nodeShadow)"/>
+                                <text x="340" y="174" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="800" fill="#ffffff">02</text>
+                                
+                                <circle class="node-circle-bg" cx="298" cy="170" r="32" fill="#ffffff" stroke="#fecdd3" stroke-width="2.5" filter="url(#nodeShadow)"/>
+                                
+                                <g transform="translate(288, 150) scale(0.9)">
+                                    <circle cx="11" cy="11" r="9.5" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8"/>
+                                    <path d="M 7 11 L 10 14 L 16 8" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+
+                                <text x="298" y="178" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6.8" font-weight="800" fill="#0f172a">APPROVAL</text>
+                                <text x="298" y="188" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6" font-weight="700" fill="#e11d48">Otorisasi PR</text>
+                            </g>
+
+                            <!-- NODE 03: BAWAH (Purchase Order - Purchasing) -->
+                            <g class="cycle-node-group" id="node-po">
+                                <rect x="173" y="309" width="34" height="17" rx="8.5" fill="url(#gradPurple)" filter="url(#nodeShadow)"/>
+                                <text x="190" y="321" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="800" fill="#ffffff">03</text>
+                                
+                                <circle class="node-circle-bg" cx="190" cy="278" r="32" fill="#ffffff" stroke="#ddd6fe" stroke-width="2.5" filter="url(#nodeShadow)"/>
+                                
+                                <g transform="translate(180, 258) scale(0.9)">
+                                    <path d="M 4 2 L 18 2 L 18 20 L 15 18 L 12 20 L 9 18 L 6 20 L 4 18 Z" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <line x1="7" y1="7" x2="15" y2="7" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/>
+                                    <line x1="7" y1="11" x2="13" y2="11" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/>
+                                </g>
+
+                                <text x="190" y="286" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6.8" font-weight="800" fill="#0f172a">PURCHASE ORDER</text>
+                                <text x="190" y="296" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6" font-weight="700" fill="#7c3aed">Pesanan Vendor</text>
+                            </g>
+
+                            <!-- NODE 04: KIRI (Goods Receipt - Warehouse) -->
+                            <g class="cycle-node-group" id="node-gr">
+                                <rect x="30" y="157" width="20" height="26" rx="10" fill="url(#gradCyan)" filter="url(#nodeShadow)"/>
+                                <text x="40" y="174" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="800" fill="#ffffff">04</text>
+                                
+                                <circle class="node-circle-bg" cx="82" cy="170" r="32" fill="#ffffff" stroke="#a5f3fc" stroke-width="2.5" filter="url(#nodeShadow)"/>
+                                
+                                <g transform="translate(71, 150) scale(0.9)">
+                                    <path d="M 12 2 L 21 7 L 12 12 L 3 7 Z" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <path d="M 3 7 L 3 17 L 12 22 L 12 12" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <path d="M 21 7 L 21 17 L 12 22 L 12 12" fill="#bae6fd" stroke="#0284c7" stroke-width="1.8" stroke-linejoin="round"/>
+                                </g>
+
+                                <text x="82" y="178" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6.8" font-weight="800" fill="#0f172a">GOODS RECEIPT</text>
+                                <text x="82" y="188" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="6" font-weight="700" fill="#0284c7">Verifikasi Gudang</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="panel-footer-info">
+                    <span><i class="bi bi-shield-check me-1"></i> 256-Bit SSL Encryption</span>
+                    <span>Versi 2.4 Enterprise</span>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN: FORM LOGIN RESMI DENGAN PENGECEKAN HUMAN -->
+            <div class="col-lg-6 form-panel">
+                <div>
+                    <h2 class="form-title">Selamat Datang</h2>
+                    <p class="form-subtitle">Masukkan username dan kata sandi Anda untuk mengakses portal.</p>
+
+                    <!-- Flash Alert Message -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} py-1 px-3 small alert-dismissible fade show mb-3 d-flex align-items-center gap-2" role="alert" style="font-size: 0.78rem;">
+                                    {% if category == 'success' %}
+                                        <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-6"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="bi bi-shield-exclamation text-warning fs-6"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill text-info fs-6"></i>
+                                    {% endif %}
+                                    <div class="flex-grow-1">{{ message }}</div>
+                                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Form Login -->
+                    <form method="POST" action="{{ url_for('login') }}" id="loginForm" autocomplete="off">
+                        <!-- Input Username -->
+                        <div class="form-group-wrap">
+                            <label class="label-custom" for="username">Username Pengguna</label>
+                            <div class="input-box-wrap">
+                                <input 
+                                    type="text" 
+                                    id="username" 
+                                    name="username" 
+                                    class="form-input-field" 
+                                    placeholder="Masukkan username Anda" 
+                                    required 
+                                    autofocus
+                                >
+                                <i class="bi bi-person prefix-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Input Password -->
+                        <div class="form-group-wrap">
+                            <label class="label-custom" for="password">Kata Sandi</label>
+                            <div class="input-box-wrap">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    class="form-input-field" 
+                                    placeholder="Masukkan kata sandi Anda" 
+                                    required
+                                >
+                                <i class="bi bi-lock prefix-icon"></i>
+                                <!-- Tombol Toggle Show/Hide Password -->
+                                <button type="button" class="btn-toggle-eye" id="btnTogglePassword" title="Lihat/Sembunyikan Kata Sandi">
+                                    <i class="bi bi-eye" id="pwdToggleIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Ingat Sesi & Bantuan -->
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label text-muted" for="rememberMe" style="cursor: pointer; font-size: 0.76rem;">
+                                    Ingat sesi perangkat ini
+                                </label>
+                            </div>
+                            <a href="javascript:void(0)" class="text-primary text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#helpModal" style="font-size: 0.76rem;">
+                                Bantuan Masuk?
+                            </a>
+                        </div>
+
+                        <!-- ============================================================
+                             WIDGET PENGECEKAN HUMAN (HUMAN VERIFICATION) - COMPACT
+                             ============================================================ -->
+                        <div class="human-verify-container" id="humanVerifyWidget">
+                            <div class="verify-trigger-box" id="verifyTrigger">
+                                <div class="verify-checkbox-custom" id="verifyBox">
+                                    <i class="bi bi-check-lg fw-bold d-none" id="verifyCheckIcon"></i>
+                                </div>
+                                <div>
+                                    <div class="verify-label-title" id="verifyTitle">Konfirmasi Saya Manusia</div>
+                                    <div class="verify-label-sub" id="verifySub">Pengecekan keamanan anti-bot terpadu</div>
+                                </div>
+                            </div>
+                            <div class="verify-badge-logo">
+                                <i class="bi bi-shield-check" id="verifyBadgeIcon"></i>
+                                <span>Security</span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Input untuk verifikasi backend -->
+                        <input type="hidden" name="human_verification" id="humanVerificationInput" value="">
+
+                        <!-- Tombol Submit Login -->
+                        <button type="submit" class="btn-submit-login" id="btnSubmit">
+                            <span>Masuk ke Portal Pengadaan</span>
+                            <i class="bi bi-arrow-right-short fs-4"></i>
+                        </button>
+                    </form>
+
+                    <div class="security-footer-note">
+                        <i class="bi bi-shield-lock-fill text-success"></i>
+                        <span>Akses terbatas hanya untuk personil yang berwenang.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Bantuan IT -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light py-2 px-3">
+                    <h6 class="modal-title fw-bold text-dark"><i class="bi bi-question-circle me-2 text-primary"></i>Dukungan Akses Sistem</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-dark p-3">
+                    <p class="small text-muted mb-3">
+                        Jika Anda mengalami kendala saat masuk atau lupa kata sandi akun kerja Anda, silakan hubungi tim Administrator Sistem atau Helpdesk IT Internal:
+                    </p>
+                    <div class="p-3 bg-light rounded-3 small">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-envelope text-primary"></i>
+                            <span>Email: <strong>it-helpdesk@perusahaan.co.id</strong></span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-telephone text-primary"></i>
+                            <span>Internal Extension: <strong>Ext. 1044 / 1045</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-2 px-3">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script Interaktif: Show/Hide Password & Pengecekan Human -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Toggle Show/Hide Password
+            const btnToggle = document.getElementById('btnTogglePassword');
+            const pwdInput = document.getElementById('password');
+            const pwdIcon = document.getElementById('pwdToggleIcon');
+
+            if (btnToggle && pwdInput && pwdIcon) {
+                btnToggle.addEventListener('click', function () {
+                    const isPassword = pwdInput.getAttribute('type') === 'password';
+                    if (isPassword) {
+                        pwdInput.setAttribute('type', 'text');
+                        pwdIcon.classList.remove('bi-eye');
+                        pwdIcon.classList.add('bi-eye-slash');
+                    } else {
+                        pwdInput.setAttribute('type', 'password');
+                        pwdIcon.classList.remove('bi-eye-slash');
+                        pwdIcon.classList.add('bi-eye');
+                    }
+                });
+            }
+
+            // 2. Interaktif Pengecekan Human
+            const verifyTrigger = document.getElementById('verifyTrigger');
+            const verifyBox = document.getElementById('verifyBox');
+            const verifyCheckIcon = document.getElementById('verifyCheckIcon');
+            const verifyTitle = document.getElementById('verifyTitle');
+            const verifySub = document.getElementById('verifySub');
+            const verifyWidget = document.getElementById('humanVerifyWidget');
+            const verifyInput = document.getElementById('humanVerificationInput');
+            const verifyBadgeIcon = document.getElementById('verifyBadgeIcon');
+            const loginForm = document.getElementById('loginForm');
+
+            let isVerifying = false;
+            let isVerified = false;
+
+            if (verifyTrigger) {
+                verifyTrigger.addEventListener('click', function () {
+                    if (isVerified || isVerifying) return;
+
+                    isVerifying = true;
+                    verifyWidget.classList.remove('shake-error');
+                    verifyBox.classList.add('loading');
+                    verifyTitle.textContent = "Menganalisis keamanan...";
+                    verifySub.textContent = "Pengecekan integritas peramban...";
+
+                    setTimeout(function () {
+                        isVerifying = false;
+                        isVerified = true;
+
+                        verifyBox.classList.remove('loading');
+                        verifyBox.classList.add('checked');
+                        verifyCheckIcon.classList.remove('d-none');
+                        verifyWidget.classList.add('verified');
+
+                        verifyTitle.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Terverifikasi sebagai Manusia</span>';
+                        verifySub.textContent = "Token verifikasi valid & terenkripsi";
+                        verifyInput.value = "verified";
+                        verifyBadgeIcon.classList.remove('bi-shield-check');
+                        verifyBadgeIcon.classList.add('bi-patch-check-fill');
+                        verifyBadgeIcon.style.color = '#16a34a';
+                    }, 500);
+                });
+            }
+
+            // Validasi onSubmit form jika belum verifikasi
+            if (loginForm) {
+                loginForm.addEventListener('submit', function (e) {
+                    if (!isVerified || verifyInput.value !== 'verified') {
+                        e.preventDefault();
+                        verifyWidget.classList.add('shake-error');
+                        verifyTitle.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i> Klik di sini untuk verifikasi!</span>';
+                        verifySub.textContent = "Pengecekan bahwa Anda manusia wajib dilakukan";
+                        setTimeout(function () {
+                            verifyWidget.classList.remove('shake-error');
+                        }, 500);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

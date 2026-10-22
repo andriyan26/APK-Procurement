@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Persetujuan Pengadaan (PR Approval) - PROCURE-APP{% endblock %}
+{% block page_title %}Persetujuan Pengadaan (PR Approval){% endblock %}
+
+{% block content %}
+<!-- HEADER ACTION BAR -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 animate-reveal delay-1">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.75rem;"><i class="bi bi-shield-check me-1"></i>Otorisasi Pimpinan / Approver</span>
+            {% if stats.pending > 0 %}
+                <span class="badge bg-danger text-white fw-bold animate-pulse" style="font-size: 0.72rem;">{{ stats.pending }} Menunggu Keputusan Anda</span>
+            {% else %}
+                <span class="badge bg-success-subtle text-success fw-bold" style="font-size: 0.72rem;">Semua Pengajuan Telah Ditinjau</span>
+            {% endif %}
+        </div>
+        <h4 class="fw-bold mb-1 text-dark">Daftar Pengajuan Butuh Persetujuan</h4>
+        <p class="text-muted small mb-0">Tinjau, evaluasi urgensi anggaran, dan berikan keputusan persetujuan sebelum diteruskan ke tim Purchasing.</p>
+    </div>
+</div>
+
+<!-- ============================================================
+     KARTU KPI COMMAND CENTER APPROVAL (PAS & ANTI-OVERFLOW)
+     ============================================================ -->
+<div class="row g-3 mb-4 animate-reveal delay-1">
+    <!-- Card 1: Antrean Pending -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-warning {% if stats.pending > 0 %}shadow-sm{% endif %}">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Perlu Keputusan</span>
+                <div class="kpi-value text-warning-emphasis">{{ stats.pending }}</div>
+                <div class="kpi-subtext">Pengajuan dalam antrean</div>
+            </div>
+            <div class="kpi-icon-box bg-warning text-dark shadow-xs">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Nominal Butuh Otorisasi -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-danger">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Nilai Pending</span>
+                <div class="kpi-value text-danger" title="{{ stats.pending_amount | format_currency }}">
+                    {{ stats.pending_amount | format_currency }}
+                </div>
+                <div class="kpi-subtext">Total anggaran ditinjau</div>
+            </div>
+            <div class="kpi-icon-box bg-danger-subtle text-danger">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Telah Disetujui (Approved) -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-success">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Telah Disetujui</span>
+                <div class="kpi-value text-success">{{ stats.approved }}</div>
+                <div class="kpi-subtext" title="{{ stats.approved_amount | format_currency }} disetujui">
+                    {{ stats.approved_amount | format_currency }}
+                </div>
+            </div>
+            <div class="kpi-icon-box bg-success-subtle text-success">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Ditolak (Rejected) -->
+    <div class="col-6 col-lg-3">
+        <div class="kpi-card border-start border-4 border-secondary">
+            <div class="kpi-card-content">
+                <span class="kpi-label">Pengajuan Ditolak</span>
+                <div class="kpi-value text-secondary">{{ stats.rejected }}</div>
+                <div class="kpi-subtext">Perlu revisi requester</div>
+            </div>
+            <div class="kpi-icon-box bg-secondary-subtle text-secondary">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FILTER STATUS PILLS & QUICK SEARCH (RAPI & ANTI-MELAR) -->
+<div class="card card-custom p-3 mb-4 animate-reveal delay-2">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <!-- Filter Navigation Pills Kiri -->
+        <div class="filter-pills-wrap">
+            <a href="{{ url_for('approval_list', status='Pending') }}" class="filter-pill-item {% if current_status == 'Pending' %}active warning{% endif %}">
+                <i class="bi bi-hourglass-split"></i>
+                <span>Menunggu Persetujuan</span>
+                <span class="filter-pill-badge">{{ stats.pending }}</span>
+            </a>
+            <a href="{{ url_for('approval_list', status='Approved') }}" class="filter-pill-item {% if current_status == 'Approved' %}active success{% endif %}">
+                <i class="bi bi-check-circle"></i>
+                <span>Telah Disetujui</span>
+                <span class="filter-pill-badge">{{ stats.approved }}</span>
+            </a>
+            <a href="{{ url_for('approval_list', status='Rejected') }}" class="filter-pill-item {% if current_status == 'Rejected' %}active danger{% endif %}">
+                <i class="bi bi-x-circle"></i>
+                <span>Ditolak</span>
+                <span class="filter-pill-badge">{{ stats.rejected }}</span>
+            </a>
+            <a href="{{ url_for('approval_list', status='All') }}" class="filter-pill-item {% if current_status == 'All' %}active{% endif %}">
+                <span>Semua Riwayat</span>
+                <span class="filter-pill-badge">{{ stats.total }}</span>
+            </a>
+        </div>
+
+        <!-- Kolom Pencarian Kanan yang Proporsional -->
+        <div class="search-filter-box">
+            <form method="GET" action="{{ url_for('approval_list') }}" class="d-flex gap-1">
+                <input type="hidden" name="status" value="{{ current_status }}">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Cari No. PR, pemohon..." value="{{ search_query }}">
+                    <button class="btn btn-primary px-3 fw-semibold" type="submit">Cari</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('approval_list', status=current_status) }}" class="btn btn-outline-secondary" title="Reset Pencarian"><i class="bi bi-x-lg"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- TABEL DAFTAR APPROVAL DENGAN KONTROL OVERFLOW AMAN -->
+<div class="card card-custom p-0 animate-reveal delay-3">
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 110px;">No. PR</th>
+                    <th style="width: 95px;">Tgl Ajukan</th>
+                    <th style="width: 120px;">Pemohon</th>
+                    <th style="width: 110px;">Departemen</th>
+                    <th>Tujuan & Rincian Barang</th>
+                    <th class="text-end" style="width: 125px;">Estimasi</th>
+                    <th class="text-center" style="width: 100px;">Status</th>
+                    <th class="text-center" style="width: 130px;">Aksi Keputusan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pr in prs %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('pr_detail', pr_id=pr.id) }}" class="fw-bold text-decoration-none text-primary d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span>{{ pr.pr_number }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <span class="text-dark">{{ pr.request_date | format_date }}</span>
+                        <small class="text-muted d-block" style="font-size: 0.68rem;">Target: {{ pr.required_date | format_date }}</small>
+                    </td>
+                    <td>
+                        <strong class="text-dark">{{ pr.requester.full_name }}</strong>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ pr.department }}</span></td>
+                    <td style="max-width: 250px;">
+                        <div class="fw-semibold text-dark text-truncate" title="{{ pr.purpose }}">
+                            {{ pr.purpose }}
+                        </div>
+                        <small class="text-muted d-block text-truncate">
+                            <i class="bi bi-boxes me-1"></i>{{ pr.items|length }} Item: 
+                            {% for it in pr.items[:2] %}{{ it.item_name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                            {% if pr.items|length > 2 %}...{% endif %}
+                        </small>
+                    </td>
+                    <td class="text-end fw-bold text-dark fs-6">
+                        {{ pr.total_estimated_amount | format_currency }}
+                    </td>
+                    <td class="text-center">
+                        {% if pr.status == 'Pending' %}
+                            <span class="badge-status badge-pending"><i class="bi bi-hourglass-split"></i> Pending</span>
+                        {% elif pr.status == 'Approved' %}
+                            <span class="badge-status badge-approved"><i class="bi bi-check-circle"></i> Approved</span>
+                        {% elif pr.status == 'Rejected' %}
+                            <span class="badge-status badge-rejected"><i class="bi bi-x-circle"></i> Rejected</span>
+                        {% elif pr.status == 'PO Created' %}
+                            <span class="badge-status badge-pocreated"><i class="bi bi-receipt"></i> PO Created</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if pr.status == 'Pending' %}
+                        <a href="{{ url_for('approval_review', pr_id=pr.id) }}" class="btn btn-sm btn-warning text-dark fw-bold shadow-sm d-inline-flex align-items-center gap-1 px-3 py-1" style="border-radius: 8px;">
+                            <i class="bi bi-clipboard2-check-fill"></i>
+                            <span>Tinjau & Approval</span>
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('pr_detail', pr_id=pr.id) }}" class="btn btn-sm btn-outline-secondary px-3 py-1" style="border-radius: 6px;">
+                            <i class="bi bi-eye me-1"></i> Rincian PR
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <div class="my-4">
+                            <i class="bi bi-check2-circle fs-1 text-success d-block mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">Antrean Persetujuan Bersih</h6>
+                            <p class="small text-muted mb-0">Tidak ada pengajuan Purchase Requisition yang menunggu keputusan pada filter ini.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
