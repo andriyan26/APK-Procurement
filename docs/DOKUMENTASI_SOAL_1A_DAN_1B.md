@@ -66,23 +66,31 @@ sequenceDiagram
     Note over W: Alur Selesai: Barang Telah Sampai di Gudang
 ```
 
-### 1.4 Berkas Asli Draw.io (Soal 1a)
-Berkas visual diagram BPMN telah disertakan dalam format `.drawio` standar:
-- **Lokasi Berkas:** [`docs/SOAL_1A_BPMN_SWIMLANE.drawio`](file:///c:/laragon/www/APK-Procurement/docs/SOAL_1A_BPMN_SWIMLANE.drawio)
-- **Cara Penggunaan:**
-  1. Buka browser dan kunjungi [https://app.diagrams.net](https://app.diagrams.net).
-  2. Pilih menu **Open Existing Diagram** &rarr; pilih berkas `SOAL_1A_BPMN_SWIMLANE.drawio`.
-  3. Klik menu **File** &rarr; **Export as** &rarr; **PDF** untuk mengonversinya menjadi dokumen PDF resmi sesuai instruksi Soal 1a.
+### 1.4 Berkas Asli Draw.io Vertikal (Soal 1a)
+Diagram BPMN telah dirancang ulang dalam format **Swimlane Vertikal (Panjang ke Bawah / Top-to-Bottom Flow)**:
+- **Judul Header Horizontal & Tegak Lurus:** Teks nama modul dan nama peran ditampilkan tegak lurus horizontal di atas kolom masing-masing (tidak miring 90 derajat).
+- **Alur Vertikal Memanjang ke Bawah:** Menghilangkan horizontal overflow pada layar standar, mengalir runtut dari Requester di puncak alur hingga serah terima fisik gudang di dasar alur.
+- **Lokasi Berkas:** [`docs/SOAL_1A_BPMN_SWIMLANE.drawio`](docs/SOAL_1A_BPMN_SWIMLANE.drawio)
+- **Cara Penggunaan & Konversi PDF (Sesuai Soal 1a):**
+  1. Buka browser dan akses [https://app.diagrams.net](https://app.diagrams.net).
+  2. Klik **Open Existing Diagram** &rarr; pilih berkas `SOAL_1A_BPMN_SWIMLANE.drawio`.
+  3. Diagram langsung tampil tegak, rapi, dan proporsional.
+  4. Klik menu **File** &rarr; **Export as** &rarr; **PDF** untuk mengunduh dokumen PDF resmi.
 
 ---
 
 ## 2. SOAL 1B: WORK BREAKDOWN STRUCTURE (WBS) MODUL & FITUR
 
-Berkas spreadsheet resmi untuk Soal 1b telah dibuat dalam 2 format:
-- **Format Excel (.xlsx):** [`docs/SOAL_1B_WBS_PROCUREMENT.xlsx`](file:///c:/laragon/www/APK-Procurement/docs/SOAL_1B_WBS_PROCUREMENT.xlsx) *(Dilengkapi styling korporat, header navy blue, zebra banding, dan lebar kolom presisi)*.
-- **Format CSV (.csv):** [`docs/SOAL_1B_WBS_PROCUREMENT.csv`](file:///c:/laragon/www/APK-Procurement/docs/SOAL_1B_WBS_PROCUREMENT.csv).
+Berkas spreadsheet resmi untuk Soal 1b telah ditingkatkan menjadi **Workbook Multi-Sheet Korporat**:
+- **Format Excel (.xlsx):** [`docs/SOAL_1B_WBS_PROCUREMENT.xlsx`](docs/SOAL_1B_WBS_PROCUREMENT.xlsx) *(Mencakup 3 Lembar Kerja: WBS Modul & Fitur, Matriks Hak Akses RBAC, dan Spesifikasi & Scope of Work)*.
+- **Format CSV (.csv):** [`docs/SOAL_1B_WBS_PROCUREMENT.csv`](docs/SOAL_1B_WBS_PROCUREMENT.csv).
 
-### Tabel Matriks Hierarki WBS:
+### Struktur 3 Sheet dalam File Excel:
+1. **Sheet 1 — `WBS Modul & Fitur`**: Rincian hierarkis 7 Modul Utama (Level 1), 24 Sub-Fitur (Level 2), rincian berkas source code acuan, deliverable, bobot persentase, dan status kesiapan 100%.
+2. **Sheet 2 — `Matriks Hak Akses (RBAC)`**: Pemetaan otoritas 5 peran pengguna (*Requester, Approver, Purchasing, Warehouse, Admin*) terhadap seluruh fitur aplikasi.
+3. **Sheet 3 — `Spesifikasi & Scope`**: Matriks pemenuhan spesifikasi teknis lembar soal, kepatuhan scope of work, dan keunggulan arsitektur.
+
+### Tabel Matriks Hierarki WBS Lengkap:
 
 | WBS Code | Modul / Fitur / Deliverable | Tingkat | Deskripsi Fungsional & Spesifikasi Teknis | Role Terkait | Keluaran (Deliverable) |
 |:---:|:---|:---:|:---|:---:|:---|

@@ -10,15 +10,18 @@
         <div class="card card-custom p-4 mb-4 animate-reveal delay-1">
             <div class="d-flex flex-wrap align-items-center justify-content-between pb-3 mb-4 border-bottom gap-2">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="bg-primary text-white p-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+                    <div class="bg-primary text-white p-3 rounded-3 d-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 48px; height: 48px;">
                         <i class="bi bi-file-earmark-plus-fill fs-3"></i>
                     </div>
                     <div>
                         <h4 class="fw-bold mb-1 text-dark">Formulir Pengajuan Pengadaan (PR)</h4>
-                        <p class="text-muted small mb-0">Lengkapi informasi kebutuhan pengadaan barang atau jasa untuk divisi Anda secara terperinci.</p>
+                        <p class="text-muted small mb-0">Lengkapi informasi kebutuhan pengadaan barang atau jasa untuk
+                            divisi Anda secara terperinci.</p>
                     </div>
                 </div>
-                <a href="{{ url_for('pr_list') }}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                <a href="{{ url_for('pr_list') }}" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold"
+                    style="border-radius: 8px;">
                     <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar PR
                 </a>
             </div>
@@ -26,28 +29,38 @@
             <form method="POST" action="{{ url_for('pr_create') }}" id="form-create-pr">
                 <!-- 1. INFORMASI HEADER / UMUM PENGAJUAN -->
                 <div class="card bg-light border p-3 mb-4 rounded-3 animate-reveal delay-2">
-                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Informasi Umum Pemohon</h6>
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill me-2 text-primary"></i>Informasi
+                        Umum Pemohon</h6>
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label small fw-semibold text-secondary">Pemohon (Requester)</label>
-                            <input type="text" class="form-control form-control-sm bg-white" value="{{ user.full_name }}" readonly>
+                            <input type="text" class="form-control form-control-sm bg-white"
+                                value="{{ user.full_name }}" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold text-secondary">Departemen / Divisi <span class="text-danger">*</span></label>
-                            <input type="text" name="department" class="form-control form-control-sm bg-white" value="{{ user.department or 'Information Technology' }}" required>
+                            <label class="form-label small fw-semibold text-secondary">Departemen / Divisi <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="department" class="form-control form-control-sm bg-white"
+                                value="{{ user.department or 'Information Technology' }}" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-semibold text-secondary">Tanggal Pengajuan</label>
-                            <input type="date" class="form-control form-control-sm bg-white" value="{{ today_str }}" readonly>
+                            <input type="date" class="form-control form-control-sm bg-white" value="{{ today_str }}"
+                                readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold text-secondary">Tanggal Dibutuhkan <span class="text-danger">*</span></label>
-                            <input type="date" name="required_date" class="form-control form-control-sm bg-white" required min="{{ today_str }}">
+                            <label class="form-label small fw-semibold text-secondary">Tanggal Dibutuhkan <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" name="required_date" class="form-control form-control-sm bg-white"
+                                required min="{{ today_str }}">
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label small fw-semibold text-secondary">Tujuan & Alasan Pengadaan (Justification / Purpose) <span class="text-danger">*</span></label>
-                            <textarea name="purpose" class="form-control form-control-sm bg-white" rows="2" placeholder="Jelaskan secara ringkas urgensi dan tujuan dari pengadaan barang ini..." required></textarea>
+                            <label class="form-label small fw-semibold text-secondary">Tujuan & Alasan Pengadaan
+                                (Justification / Purpose) <span class="text-danger">*</span></label>
+                            <textarea name="purpose" class="form-control form-control-sm bg-white" rows="2"
+                                placeholder="Jelaskan secara ringkas urgensi dan tujuan dari pengadaan barang ini..."
+                                required></textarea>
                         </div>
                     </div>
                 </div>
@@ -59,18 +72,22 @@
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <span class="ai-badge-pulse">
                                     <span class="ai-pulse-dot"></span>
-                                    <span>Fitur Nilai Plus</span>
+                                    <span>Fitur</span>
                                 </span>
                                 <h6 class="fw-bold mb-0 text-primary d-flex align-items-center gap-1">
                                     <i class="bi bi-stars"></i>
                                     <span>AI Computer Vision: Smart Catalog &amp; Brosur Scanner</span>
                                 </h6>
                             </div>
-                            <small class="text-muted d-block">Unggah foto brosur, katalog produk, atau nota penawaran untuk ekstraksi multi-item barang otomatis via AI Vision.</small>
+                            <small class="text-muted d-block">Unggah foto brosur, katalog produk, atau nota penawaran
+                                untuk ekstraksi multi-item barang otomatis via AI Vision.</small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <input type="file" id="ai-pr-file" class="form-control form-control-sm bg-white" accept="image/*,.pdf" style="max-width: 220px;">
-                            <button type="button" id="btn-ai-scan-pr" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                            <input type="file" id="ai-pr-file" class="form-control form-control-sm bg-white"
+                                accept="image/*,.pdf" style="max-width: 220px;">
+                            <button type="button" id="btn-ai-scan-pr"
+                                class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm px-3 py-2 fw-semibold"
+                                style="border-radius: 8px;">
                                 <i class="bi bi-camera-fill me-1"></i>
                                 <span>Scan Dokumen dengan AI</span>
                             </button>
@@ -78,8 +95,10 @@
                     </div>
 
                     <!-- TOMBOL SAMPEL CEPAT UNTUK PENGUJIAN INSTAN OLEH PENGUJI -->
-                    <div class="d-flex flex-wrap align-items-center gap-2 pt-2 border-top border-indigo border-opacity-25 mt-2">
-                        <small class="text-muted fw-semibold me-1"><i class="bi bi-magic me-1"></i>Preset Sampel Cepat AI:</small>
+                    <div
+                        class="d-flex flex-wrap align-items-center gap-2 pt-2 border-top border-indigo border-opacity-25 mt-2">
+                        <small class="text-muted fw-semibold me-1"><i class="bi bi-magic me-1"></i>Preset Sampel Cepat
+                            AI:</small>
                         <button type="button" class="quick-sample-chip ai-pr-sample" data-package="workstation">
                             <i class="bi bi-laptop me-1 text-primary"></i>Katalog Paket Workstation IT
                         </button>
@@ -99,11 +118,14 @@
                 <div class="animate-reveal delay-3">
                     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
                         <div>
-                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-boxes me-2 text-primary"></i>Rincian Item Barang / Jasa</h6>
-                            <small class="text-muted">Masukkan item yang ingin diajukan, atau klik template cepat di samping.</small>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-boxes me-2 text-primary"></i>Rincian Item
+                                Barang / Jasa</h6>
+                            <small class="text-muted">Masukkan item yang ingin diajukan, atau klik template cepat di
+                                samping.</small>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-primary px-3 shadow-sm" id="btn-add-item" style="border-radius: 8px;">
+                            <button type="button" class="btn btn-sm btn-primary px-3 shadow-sm" id="btn-add-item"
+                                style="border-radius: 8px;">
                                 <i class="bi bi-plus-lg me-1"></i> Tambah Baris Item
                             </button>
                         </div>
@@ -111,17 +133,27 @@
 
                     <!-- TEMPLATE CEPAT INPUT ITEM BARANG (REAL-TIME SUGGESTION TAGS) -->
                     <div class="d-flex flex-wrap align-items-center gap-1 mb-3 p-2 bg-light rounded-2 border">
-                        <small class="fw-bold text-secondary me-2"><i class="bi bi-lightning-fill text-warning"></i> Template Cepat:</small>
-                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn" data-name="Laptop ThinkPad T14 Gen 4" data-spec="AMD Ryzen 7, 32GB RAM, 1TB SSD" data-qty="1" data-unit="Unit" data-price="18500000" style="font-size: 0.74rem;">
+                        <small class="fw-bold text-secondary me-2"><i class="bi bi-lightning-fill text-warning"></i>
+                            Template Cepat:</small>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn"
+                            data-name="Laptop ThinkPad T14 Gen 4" data-spec="AMD Ryzen 7, 32GB RAM, 1TB SSD"
+                            data-qty="1" data-unit="Unit" data-price="18500000" style="font-size: 0.74rem;">
                             + Laptop ThinkPad T14
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn" data-name="Monitor Dell 27 Inch 4K UHD" data-spec="IPS Black 4K, USB-C Hub 90W PD" data-qty="1" data-unit="Unit" data-price="8200000" style="font-size: 0.74rem;">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn"
+                            data-name="Monitor Dell 27 Inch 4K UHD" data-spec="IPS Black 4K, USB-C Hub 90W PD"
+                            data-qty="1" data-unit="Unit" data-price="8200000" style="font-size: 0.74rem;">
                             + Monitor 27" Dell 4K
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn" data-name="Wireless Mouse & Keyboard Logitech" data-spec="Logitech MK295 Silent Wireless Combo" data-qty="2" data-unit="Set" data-price="450000" style="font-size: 0.74rem;">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn"
+                            data-name="Wireless Mouse & Keyboard Logitech"
+                            data-spec="Logitech MK295 Silent Wireless Combo" data-qty="2" data-unit="Set"
+                            data-price="450000" style="font-size: 0.74rem;">
                             + Mouse & Keyboard
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn" data-name="Kertas PaperOne A4 80gr" data-spec="A4 210 x 297 mm, 80 gsm, 500 lembar" data-qty="10" data-unit="Rim" data-price="55000" style="font-size: 0.74rem;">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 quick-add-btn"
+                            data-name="Kertas PaperOne A4 80gr" data-spec="A4 210 x 297 mm, 80 gsm, 500 lembar"
+                            data-qty="10" data-unit="Rim" data-price="55000" style="font-size: 0.74rem;">
                             + Kertas PaperOne A4
                         </button>
                     </div>
@@ -136,7 +168,8 @@
                                     <th>Spesifikasi Detail</th>
                                     <th style="width: 110px;">Qty <span class="text-danger">*</span></th>
                                     <th style="width: 120px;">Satuan</th>
-                                    <th style="width: 190px;">Est. Harga Satuan (Rp) <span class="text-danger">*</span></th>
+                                    <th style="width: 190px;">Est. Harga Satuan (Rp) <span class="text-danger">*</span>
+                                    </th>
                                     <th class="text-end" style="width: 180px;">Subtotal (Rp)</th>
                                     <th class="text-center" style="width: 60px;">Aksi</th>
                                 </tr>
@@ -146,13 +179,17 @@
                                 <tr class="item-row">
                                     <td class="text-center row-number fw-bold text-muted">1</td>
                                     <td>
-                                        <input type="text" name="item_name[]" class="form-control form-control-sm" placeholder="Contoh: Laptop ThinkPad T14" required>
+                                        <input type="text" name="item_name[]" class="form-control form-control-sm"
+                                            placeholder="Contoh: Laptop ThinkPad T14" required>
                                     </td>
                                     <td>
-                                        <input type="text" name="specification[]" class="form-control form-control-sm" placeholder="AMD Ryzen 7, 32GB RAM, 1TB SSD">
+                                        <input type="text" name="specification[]" class="form-control form-control-sm"
+                                            placeholder="AMD Ryzen 7, 32GB RAM, 1TB SSD">
                                     </td>
                                     <td>
-                                        <input type="number" name="quantity[]" class="form-control form-control-sm text-center item-qty" value="1" min="1" required>
+                                        <input type="number" name="quantity[]"
+                                            class="form-control form-control-sm text-center item-qty" value="1" min="1"
+                                            required>
                                     </td>
                                     <td>
                                         <select name="unit[]" class="form-select form-select-sm">
@@ -169,14 +206,16 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <span class="input-group-text">Rp</span>
-                                            <input type="number" name="estimated_price[]" class="form-control item-price" value="0" min="0" step="1000" required>
+                                            <input type="number" name="estimated_price[]"
+                                                class="form-control item-price" value="0" min="0" step="1000" required>
                                         </div>
                                     </td>
                                     <td class="text-end fw-bold text-primary item-subtotal-text">
                                         Rp 0
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item" title="Hapus Item">
+                                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-item"
+                                            title="Hapus Item">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -184,7 +223,8 @@
                             </tbody>
                             <tfoot>
                                 <tr class="table-light">
-                                    <td colspan="6" class="text-end fw-bold fs-6">Total Estimasi Anggaran Pengadaan:</td>
+                                    <td colspan="6" class="text-end fw-bold fs-6">Total Estimasi Anggaran Pengadaan:
+                                    </td>
                                     <td class="text-end fw-bold fs-5 text-primary" id="pr-grand-total">Rp 0</td>
                                     <td></td>
                                 </tr>
@@ -195,8 +235,11 @@
 
                 <!-- 3. TOMBOL AKSI SUBMIT -->
                 <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top animate-reveal delay-4">
-                    <a href="{{ url_for('pr_list') }}" class="btn btn-light border px-4 py-2" style="border-radius: 10px;">Batal</a>
-                    <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm fw-bold d-inline-flex align-items-center gap-2" style="border-radius: 10px;">
+                    <a href="{{ url_for('pr_list') }}" class="btn btn-light border px-4 py-2"
+                        style="border-radius: 10px;">Batal</a>
+                    <button type="submit"
+                        class="btn btn-primary px-4 py-2 shadow-sm fw-bold d-inline-flex align-items-center gap-2"
+                        style="border-radius: 10px;">
                         <i class="bi bi-send-check-fill fs-6"></i>
                         <span>Ajukan Purchase Requisition</span>
                     </button>
@@ -209,63 +252,63 @@
 
 {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ============================================================
-    // LOGIKA AI VISION: SMART CATALOG & BROSUR SCANNER UNTUK PR
-    // ============================================================
-    const btnAiScanPr = document.getElementById('btn-ai-scan-pr');
-    const aiPrFile = document.getElementById('ai-pr-file');
-    const aiPrAlert = document.getElementById('ai-pr-alert-placeholder');
-    const tbodyPr = document.getElementById('pr-items-tbody');
+    document.addEventListener('DOMContentLoaded', function () {
+        // ============================================================
+        // LOGIKA AI VISION: SMART CATALOG & BROSUR SCANNER UNTUK PR
+        // ============================================================
+        const btnAiScanPr = document.getElementById('btn-ai-scan-pr');
+        const aiPrFile = document.getElementById('ai-pr-file');
+        const aiPrAlert = document.getElementById('ai-pr-alert-placeholder');
+        const tbodyPr = document.getElementById('pr-items-tbody');
 
-    const sampleCatalogData = {
-        workstation: {
-            title: "Paket Hardware IT Workstation Engineer",
-            confidence: "99.4%",
-            items: [
-                { name: "Laptop ThinkPad P16 Gen 2 Workstation", spec: "Intel Core i7-13850HX, 32GB DDR5, 1TB NVMe, RTX A2000", qty: 1, unit: "Unit", price: 28500000 },
-                { name: "Monitor Dell UltraSharp 27 4K USB-C Hub", spec: "IPS Black 4K UHD 3840x2160, 90W Power Delivery", qty: 1, unit: "Unit", price: 8450000 },
-                { name: "Keyboard Mekanikal Wireless & Mouse Ergonomis", spec: "Logitech MX Master 3S & MX Mechanical Keyboard", qty: 1, unit: "Set", price: 2850000 }
-            ]
-        },
-        network: {
-            title: "Brosur Perangkat Jaringan & Server Rack",
-            confidence: "98.9%",
-            items: [
-                { name: "Cisco Catalyst Switch 24-Port Gigabit PoE+", spec: "Managed Layer 2/3 Switch, 370W PoE budget", qty: 2, unit: "Unit", price: 14200000 },
-                { name: "Kabel UTP Cat6 Belden Original 305M", spec: "1000ft Solid Bare Copper 23 AWG Blue", qty: 4, unit: "Roll", price: 1850000 },
-                { name: "Patch Panel 24 Port Cat6 Modular", spec: "19 Inch Rackmount with Cable Management Bar", qty: 2, unit: "Unit", price: 750000 }
-            ]
-        },
-        meeting: {
-            title: "Katalog Multimedia Ruang Rapat Eksekutif",
-            confidence: "99.1%",
-            items: [
-                { name: "Smart TV Interactive Display 65 Inch 4K", spec: "Android 13 OS, 40-Point Multi-Touch, Pen Included", qty: 1, unit: "Unit", price: 22500000 },
-                { name: "Video Conference Camera 4K Ultra HD", spec: "Auto-Framing, Voice Tracking Microphone Array 8M", qty: 1, unit: "Set", price: 7800000 }
-            ]
-        }
-    };
-
-    function populateItemsFromAi(title, items, confidence) {
-        if (!tbodyPr || !items || items.length === 0) return;
-
-        // Cek baris pertama, jika kosong bersihkan dulu
-        const existingRows = tbodyPr.querySelectorAll('tr.item-row');
-        let startIdx = 0;
-
-        if (existingRows.length === 1) {
-            const firstInput = existingRows[0].querySelector('input[name="item_name[]"]');
-            if (!firstInput.value || firstInput.value.trim() === '') {
-                tbodyPr.innerHTML = '';
+        const sampleCatalogData = {
+            workstation: {
+                title: "Paket Hardware IT Workstation Engineer",
+                confidence: "99.4%",
+                items: [
+                    { name: "Laptop ThinkPad P16 Gen 2 Workstation", spec: "Intel Core i7-13850HX, 32GB DDR5, 1TB NVMe, RTX A2000", qty: 1, unit: "Unit", price: 28500000 },
+                    { name: "Monitor Dell UltraSharp 27 4K USB-C Hub", spec: "IPS Black 4K UHD 3840x2160, 90W Power Delivery", qty: 1, unit: "Unit", price: 8450000 },
+                    { name: "Keyboard Mekanikal Wireless & Mouse Ergonomis", spec: "Logitech MX Master 3S & MX Mechanical Keyboard", qty: 1, unit: "Set", price: 2850000 }
+                ]
+            },
+            network: {
+                title: "Brosur Perangkat Jaringan & Server Rack",
+                confidence: "98.9%",
+                items: [
+                    { name: "Cisco Catalyst Switch 24-Port Gigabit PoE+", spec: "Managed Layer 2/3 Switch, 370W PoE budget", qty: 2, unit: "Unit", price: 14200000 },
+                    { name: "Kabel UTP Cat6 Belden Original 305M", spec: "1000ft Solid Bare Copper 23 AWG Blue", qty: 4, unit: "Roll", price: 1850000 },
+                    { name: "Patch Panel 24 Port Cat6 Modular", spec: "19 Inch Rackmount with Cable Management Bar", qty: 2, unit: "Unit", price: 750000 }
+                ]
+            },
+            meeting: {
+                title: "Katalog Multimedia Ruang Rapat Eksekutif",
+                confidence: "99.1%",
+                items: [
+                    { name: "Smart TV Interactive Display 65 Inch 4K", spec: "Android 13 OS, 40-Point Multi-Touch, Pen Included", qty: 1, unit: "Unit", price: 22500000 },
+                    { name: "Video Conference Camera 4K Ultra HD", spec: "Auto-Framing, Voice Tracking Microphone Array 8M", qty: 1, unit: "Set", price: 7800000 }
+                ]
             }
-        }
+        };
 
-        items.forEach((item, idx) => {
-            const rowCount = tbodyPr.querySelectorAll('tr.item-row').length + 1;
-            const tr = document.createElement('tr');
-            tr.className = 'item-row';
-            tr.innerHTML = `
+        function populateItemsFromAi(title, items, confidence) {
+            if (!tbodyPr || !items || items.length === 0) return;
+
+            // Cek baris pertama, jika kosong bersihkan dulu
+            const existingRows = tbodyPr.querySelectorAll('tr.item-row');
+            let startIdx = 0;
+
+            if (existingRows.length === 1) {
+                const firstInput = existingRows[0].querySelector('input[name="item_name[]"]');
+                if (!firstInput.value || firstInput.value.trim() === '') {
+                    tbodyPr.innerHTML = '';
+                }
+            }
+
+            items.forEach((item, idx) => {
+                const rowCount = tbodyPr.querySelectorAll('tr.item-row').length + 1;
+                const tr = document.createElement('tr');
+                tr.className = 'item-row';
+                tr.innerHTML = `
                 <td class="text-center row-number fw-bold text-muted">${rowCount}</td>
                 <td>
                     <input type="text" name="item_name[]" class="form-control form-control-sm" value="${item.name}" required>
@@ -303,15 +346,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     </button>
                 </td>
             `;
-            tbodyPr.appendChild(tr);
-        });
+                tbodyPr.appendChild(tr);
+            });
 
-        // Trigger input event agar subtotal dan grand total langsung terhitung
-        tbodyPr.dispatchEvent(new Event('input', { bubbles: true }));
+            // Trigger input event agar subtotal dan grand total langsung terhitung
+            tbodyPr.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // Tampilkan alert sukses AI
-        if (aiPrAlert) {
-            aiPrAlert.innerHTML = `
+            // Tampilkan alert sukses AI
+            if (aiPrAlert) {
+                aiPrAlert.innerHTML = `
                 <div class="alert alert-success alert-dismissible fade show p-2 px-3 small d-flex align-items-center gap-2 mb-0 shadow-sm" style="border-radius: 8px;">
                     <i class="bi bi-check-circle-fill fs-5 text-success"></i>
                     <div>
@@ -320,82 +363,82 @@ document.addEventListener('DOMContentLoaded', function () {
                     <button type="button" class="btn-close btn-sm p-2" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
-        }
-    }
-
-    // Tombol Scan via File Upload & Fetch API
-    if (btnAiScanPr) {
-        btnAiScanPr.addEventListener('click', function () {
-            const originalHtml = this.innerHTML;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> AI Memindai...';
-            this.disabled = true;
-
-            const formData = new FormData();
-            if (aiPrFile && aiPrFile.files.length > 0) {
-                formData.append('file', aiPrFile.files[0]);
             }
+        }
 
-            fetch('/api/ai-scan-pr', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-                if (res.success && res.items) {
-                    populateItemsFromAi(res.package_name, res.items, res.confidence_score);
+        // Tombol Scan via File Upload & Fetch API
+        if (btnAiScanPr) {
+            btnAiScanPr.addEventListener('click', function () {
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> AI Memindai...';
+                this.disabled = true;
+
+                const formData = new FormData();
+                if (aiPrFile && aiPrFile.files.length > 0) {
+                    formData.append('file', aiPrFile.files[0]);
                 }
-            })
-            .catch(err => {
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-                // Fallback instan jika koneksi offline
-                const fallback = sampleCatalogData.workstation;
-                populateItemsFromAi(fallback.title, fallback.items, fallback.confidence);
+
+                fetch('/api/ai-scan-pr', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        this.innerHTML = originalHtml;
+                        this.disabled = false;
+                        if (res.success && res.items) {
+                            populateItemsFromAi(res.package_name, res.items, res.confidence_score);
+                        }
+                    })
+                    .catch(err => {
+                        this.innerHTML = originalHtml;
+                        this.disabled = false;
+                        // Fallback instan jika koneksi offline
+                        const fallback = sampleCatalogData.workstation;
+                        populateItemsFromAi(fallback.title, fallback.items, fallback.confidence);
+                    });
+            });
+        }
+
+        // Tombol Preset Cepat AI
+        document.querySelectorAll('.ai-pr-sample').forEach(chip => {
+            chip.addEventListener('click', function () {
+                const pkgKey = this.getAttribute('data-package');
+                const data = sampleCatalogData[pkgKey];
+                if (data) {
+                    populateItemsFromAi(data.title, data.items, data.confidence);
+                }
             });
         });
-    }
 
-    // Tombol Preset Cepat AI
-    document.querySelectorAll('.ai-pr-sample').forEach(chip => {
-        chip.addEventListener('click', function () {
-            const pkgKey = this.getAttribute('data-package');
-            const data = sampleCatalogData[pkgKey];
-            if (data) {
-                populateItemsFromAi(data.title, data.items, data.confidence);
-            }
-        });
-    });
+        // Event listener untuk tombol Quick Template Suggestion Tags
+        document.querySelectorAll('.quick-add-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const name = this.getAttribute('data-name');
+                const spec = this.getAttribute('data-spec');
+                const qty = this.getAttribute('data-qty');
+                const unit = this.getAttribute('data-unit');
+                const price = this.getAttribute('data-price');
 
-    // Event listener untuk tombol Quick Template Suggestion Tags
-    document.querySelectorAll('.quick-add-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const name = this.getAttribute('data-name');
-            const spec = this.getAttribute('data-spec');
-            const qty = this.getAttribute('data-qty');
-            const unit = this.getAttribute('data-unit');
-            const price = this.getAttribute('data-price');
+                const tbody = document.getElementById('pr-items-tbody');
+                if (!tbody) return;
 
-            const tbody = document.getElementById('pr-items-tbody');
-            if (!tbody) return;
+                // Cek jika baris pertama masih kosong
+                const firstRow = tbody.querySelector('tr.item-row:first-child');
+                const firstNameInput = firstRow ? firstRow.querySelector('input[name="item_name[]"]') : null;
 
-            // Cek jika baris pertama masih kosong
-            const firstRow = tbody.querySelector('tr.item-row:first-child');
-            const firstNameInput = firstRow ? firstRow.querySelector('input[name="item_name[]"]') : null;
-
-            if (firstRow && (!firstNameInput.value || firstNameInput.value.trim() === '')) {
-                firstNameInput.value = name;
-                firstRow.querySelector('input[name="specification[]"]').value = spec;
-                firstRow.querySelector('input[name="quantity[]"]').value = qty;
-                firstRow.querySelector('select[name="unit[]"]').value = unit;
-                firstRow.querySelector('input[name="estimated_price[]"]').value = price;
-            } else {
-                // Tambah baris baru
-                const rowCount = tbody.querySelectorAll('tr.item-row').length + 1;
-                const newRow = document.createElement('tr');
-                newRow.className = 'item-row';
-                newRow.innerHTML = `
+                if (firstRow && (!firstNameInput.value || firstNameInput.value.trim() === '')) {
+                    firstNameInput.value = name;
+                    firstRow.querySelector('input[name="specification[]"]').value = spec;
+                    firstRow.querySelector('input[name="quantity[]"]').value = qty;
+                    firstRow.querySelector('select[name="unit[]"]').value = unit;
+                    firstRow.querySelector('input[name="estimated_price[]"]').value = price;
+                } else {
+                    // Tambah baris baru
+                    const rowCount = tbody.querySelectorAll('tr.item-row').length + 1;
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'item-row';
+                    newRow.innerHTML = `
                     <td class="text-center row-number fw-bold text-muted">${rowCount}</td>
                     <td>
                         <input type="text" name="item_name[]" class="form-control form-control-sm" value="${name}" required>
@@ -433,13 +476,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         </button>
                     </td>
                 `;
-                tbody.appendChild(newRow);
-            }
+                    tbody.appendChild(newRow);
+                }
 
-            // Memicu event input agar kalkulasi subtotal langsung jalan real-time
-            tbody.dispatchEvent(new Event('input', { bubbles: true }));
+                // Memicu event input agar kalkulasi subtotal langsung jalan real-time
+                tbody.dispatchEvent(new Event('input', { bubbles: true }));
+            });
         });
     });
-});
 </script>
 {% endblock %}
