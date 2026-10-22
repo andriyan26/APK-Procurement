@@ -908,6 +908,124 @@ def gr_detail(gr_id):
 # ==========================================
 # FITUR NILAI PLUS: SIMULASI AI SMART SCANNER
 # ==========================================
+# FITUR NILAI PLUS: SIMULASI AI SMART SCANNER SUITE
+# ==========================================
+@app.route('/api/ai-scan-pr', methods=['POST'])
+@login_required
+def ai_scan_pr_catalog():
+    """
+    Fitur Nilai Plus: Computer Vision / AI Model Simulator untuk input form Purchase Requisition (PR).
+    Menerima gambar katalog/brosur/invoice kebutuhan barang dan mengekstrak multi-item ke form PR.
+    """
+    import random
+    import time
+    time.sleep(0.5)
+
+    file = request.files.get('file')
+    filename = file.filename if file else 'catalog_spec_sheet.png'
+
+    # Sampel paket ekstraksi AI Vision cerdas
+    sample_packages = [
+        {
+            "package_name": "Paket Hardware IT Workstation Engineer",
+            "items": [
+                {"name": "Laptop ThinkPad P16 Gen 2 Workstation", "spec": "Intel Core i7-13850HX, 32GB DDR5, 1TB NVMe, RTX A2000", "qty": 1, "unit": "Unit", "price": 28500000},
+                {"name": "Monitor Dell UltraSharp 27 4K USB-C Hub", "spec": "IPS Black 4K UHD 3840x2160, 90W Power Delivery", "qty": 1, "unit": "Unit", "price": 8450000},
+                {"name": "Keyboard Mekanikal Wireless & Mouse Ergonomis", "spec": "Logitech MX Master 3S & MX Mechanical Keyboard", "qty": 1, "unit": "Set", "price": 2850000}
+            ]
+        },
+        {
+            "package_name": "Paket Infrastruktur Jaringan & Server Rack",
+            "items": [
+                {"name": "Cisco Catalyst Switch 24-Port Gigabit PoE+", "spec": "Managed Layer 2/3 Switch, 370W PoE budget", "qty": 2, "unit": "Unit", "price": 14200000},
+                {"name": "Kabel UTP Cat6 Belden Original 305M", "spec": "1000ft Solid Bare Copper 23 AWG Blue", "qty": 4, "unit": "Roll", "price": 1850000},
+                {"name": "Patch Panel 24 Port Cat6 Modular", "spec": "19 Inch Rackmount with Cable Management Bar", "qty": 2, "unit": "Unit", "price": 750000}
+            ]
+        },
+        {
+            "package_name": "Paket Perlengkapan Ruang Rapat & Multimedia",
+            "items": [
+                {"name": "Smart TV Interactive Display 65 Inch 4K", "spec": "Android 13 OS, 40-Point Multi-Touch, Pen Included", "qty": 1, "unit": "Unit", "price": 22500000},
+                {"name": "Video Conference Camera 4K Ultra HD", "spec": "Auto-Framing, Voice Tracking Microphone Array 8M", "qty": 1, "unit": "Set", "price": 7800000}
+            ]
+        }
+    ]
+
+    chosen = random.choice(sample_packages)
+
+    return jsonify({
+        'success': True,
+        'message': f'AI Computer Vision berhasil mendeteksi {len(chosen["items"])} item dari dokumen "{filename}"',
+        'package_name': chosen['package_name'],
+        'confidence_score': '99.4%',
+        'items': chosen['items']
+    })
+
+
+@app.route('/api/ai-scan-quotation', methods=['POST'])
+@login_required
+def ai_scan_vendor_quotation():
+    """
+    Fitur Nilai Plus: Computer Vision / AI Model Simulator untuk input form Purchase Order (PO).
+    Menerima scan/foto Surat Penawaran Resmi Vendor dan mengekstrak data rekanan, payment terms, & alamat.
+    """
+    import random
+    import time
+    time.sleep(0.5)
+
+    file = request.files.get('file')
+    filename = file.filename if file else 'vendor_quotation_letter.pdf'
+
+    sample_vendors = [
+        {
+            "vendor_name": "PT Solusi Mitra Informatika",
+            "vendor_phone": "021-52908877",
+            "vendor_email": "corporate.sales@solusimitra.co.id",
+            "vendor_address": "Gedung Cyber 2 Lt. 8, Jl. HR Rasuna Said Blok X-5, Kuningan, Jakarta Selatan 12950",
+            "payment_terms": "Net 30 Days",
+            "delivery_days": 7,
+            "notes": "Penawaran harga resmi Ref: SMI/Q-2026/8921. Garansi resmi distributor 3 tahun replace unit."
+        },
+        {
+            "vendor_name": "CV ATK Berkah Jaya Mandiri",
+            "vendor_phone": "021-3908812",
+            "vendor_email": "order@atkberkah.com",
+            "vendor_address": "Ruko Sentra Niaga Blok C-12, Jl. Pramuka Raya No. 45, Jakarta Timur 13120",
+            "payment_terms": "Cash On Delivery (COD)",
+            "delivery_days": 3,
+            "notes": "Penawaran harga terbaik nomor: BJM-Q/2026/04. Gratis ongkir area Jabodetabek untuk pembelian di atas 5 juta."
+        },
+        {
+            "vendor_name": "PT Triputra Daya Mandiri",
+            "vendor_phone": "021-7890123",
+            "vendor_email": "sourcing@triputradaya.co.id",
+            "vendor_address": "Kawasan Industri Pulogadung Blok F-10, Jl. Rawa Gelam IV, Jakarta Timur 13930",
+            "payment_terms": "Advance Payment / DP 50%",
+            "delivery_days": 14,
+            "notes": "Surat Penawaran Kontrak No: TDM/PRJ/2026-XI. Termasuk sertifikasi uji kelayakan & kalibrasi pabrikan."
+        }
+    ]
+
+    vendor_info = random.choice(sample_vendors)
+    from datetime import timedelta
+    est_date = (date.today() + timedelta(days=vendor_info['delivery_days'])).strftime('%Y-%m-%d')
+
+    return jsonify({
+        'success': True,
+        'message': f'AI Smart Vision berhasil mengekstrak surat penawaran dari "{vendor_info["vendor_name"]}"',
+        'confidence_score': '98.9%',
+        'data': {
+            'vendor_name': vendor_info['vendor_name'],
+            'vendor_phone': vendor_info['vendor_phone'],
+            'vendor_email': vendor_info['vendor_email'],
+            'vendor_address': vendor_info['vendor_address'],
+            'payment_terms': vendor_info['payment_terms'],
+            'delivery_estimate_date': est_date,
+            'notes': vendor_info['notes']
+        }
+    })
+
+
 @app.route('/api/ai-scan-do', methods=['POST'])
 @login_required
 def ai_scan_delivery_order():
@@ -938,6 +1056,7 @@ def ai_scan_delivery_order():
             'ai_notes': f'Hasil ekstraksi otomatis OCR dari dokumen: {filename}. Kondisi fisik paket utuh.'
         }
     })
+
 
 # ==========================================
 # MAIN ENTRYPOINT

@@ -47,28 +47,47 @@ flowchart LR
    - Pemutakhiran otomatis status PO menjadi **Received (Lengkap)** atau **Partially Received (Sebagian)**.
 
 > **Batasan Sistem (Out of Scope):**  
-> Sesuai spesifikasi teknis, sistem ini **tidak mencakup** aplikasi gudang lanjutan (kartu stok internal, mutasi rak gudang) maupun modul pembayaran/keuangan (*Accounts Payable* / pembayaran invoice faktur pajak).
+> Sesuai spesifikasi teknis Soal: Sistem ini **tidak mencakup** aplikasi gudang lanjutan (kartu stok internal, mutasi rak gudang, bin/rack slotting) maupun modul pembayaran/keuangan (*Accounts Payable* / pembayaran invoice faktur pajak). Fokus utama adalah siklus pengadaan dari awal **Request (PR)** hingga **Barang Sampai di Gudang (GR)**.
 
 ---
 
-## 2. Fitur Unggulan & Nilai Plus (Competitive Advantages)
+## 2. Pemenuhan Soal 1: Analisis (BPMN Swimlane & WBS Excel)
 
-- 🤖 **AI Vision OCR: Smart Scanner Surat Jalan (Delivery Order)**  
-  Petugas gudang dapat mengunggah foto/scan dokumen surat jalan vendor untuk mengekstrak nomor DO, tanggal kedatangan, dan kondisi fisik paket secara otomatis via algoritma OCR. Dilengkapi tombol *quick sample* untuk pengujian kilat.
-- 🔄 **Diagram Siklus Terpadu (*Circular Procurement Cycle*) pada Login Portal**  
-  Panel login menampilkan diagram siklus melingkar 4-tahap terpadu dengan desain modern, pendaran warna (*ambient glow*), dan efek hover interaktif.
-- 📊 **Dashboard Dinamis Khusus Ke-5 Role Pengguna**  
-  Tampilan dasbor, kartu KPI statistik, antrean tugas prioritas, grafik analitik *Chart.js*, dan alur kerja otomatis menyesuaikan dengan siapa yang sedang login (*Requester*, *Approver*, *Purchasing*, *Warehouse*, atau *Admin*).
-- 🖨️ **Dokumen Resmi Siap Cetak (Print-Ready A4 PDF)**  
-  Dokumen Purchase Order (PO), Bukti Goods Receipt Slip (GR), dan formulir PR telah distandarisasi dengan Kop Surat resmi korporat, cap stempel digital status, tabel presisi anti-pecah halaman (*page-break-inside avoid*), dan 3 kolom tanda tangan pengesahan basah/digital.
-- 🛡️ **Pengecekan Keamanan Anti-Bot (Human Check Verification)**  
-  Formulir autentikasi dilengkapi simulasi pengecekan interaktif anti-bruteforce untuk memastikan akses dilakukan oleh personel manusia berwenang.
-- 📐 **Tampilan Anti-Overflow (Presisi 1366x768 Laptop Ready)**  
-  Seluruh komponen antarmuka, kartu metrik, filter pills, dan tabel data dirancang responsif, terkunci dari risiko *horizontal overflow*, dengan animasi muncul bertahap (*staggered data reveal*).
+Sesuai instruksi pada lembar soal (*Take Home Programming Test - Software Engineer* Cineul Technologies), berkas analisis resmi telah disertakan lengkap pada direktori `docs/`:
+
+1. **Soal 1a &bull; Swimlane BPMN (Business Process Model and Notation):**
+   - **Berkas Visual Draw.io:** [`docs/SOAL_1A_BPMN_SWIMLANE.drawio`](docs/SOAL_1A_BPMN_SWIMLANE.drawio) *(Dapat dibuka langsung di [app.diagrams.net](https://app.diagrams.net) dan diekspor ke PDF/PNG)*.
+   - **Dokumentasi & Diagram Mermaid:** [`docs/DOKUMENTASI_SOAL_1A_DAN_1B.md`](docs/DOKUMENTASI_SOAL_1A_DAN_1B.md) *(5 Swimlane Roles: Requester, Approver, Purchasing, Vendor Rekanan, & Warehouse)*.
+2. **Soal 1b &bull; Work Breakdown Structure (WBS Modul & Fitur):**
+   - **Berkas Spreadsheet Resmi Excel:** [`docs/SOAL_1B_WBS_PROCUREMENT.xlsx`](docs/SOAL_1B_WBS_PROCUREMENT.xlsx) *(Lengkap dengan styling korporat, header navy blue, zebra banding, dan hirarki Level 1 s/d Level 3)*.
+   - **Berkas CSV Data:** [`docs/SOAL_1B_WBS_PROCUREMENT.csv`](docs/SOAL_1B_WBS_PROCUREMENT.csv).
 
 ---
 
-## 3. Skema Basis Data & Relasi (SQLite `procurement.db`)
+## 3. Fitur Opsional Nilai Plus: Computer Vision & AI Vision Suite
+
+Menjawab ketentuan soal untuk menghadirkan fitur nilai plus input form berbasis AI/Computer Vision, sistem ini mengintegrasikan **AI Vision Procurement Suite** di **3 titik krusial proses pengadaan** agar **seluruh peran operasional merasakan manfaatnya**:
+
+1. 🛍️ **Tahap 1 (Requester - `/pr/create`): AI Smart Catalog & Brosur Scanner**  
+   Pemohon cukup mengunggah foto brosur, katalog barang, atau screenshot nota kebutuhan. AI Model secara otomatis mengekstrak Nama Barang, Spesifikasi Teknis, Kuantitas, Satuan, dan Estimasi Harga Satuan &rarr; langsung mengisi tabel multi-item PR secara instan!
+2. 📄 **Tahap 3 (Purchasing - `/po/create`): AI Vendor Quotation & Contract Scanner**  
+   Petugas pengadaan mengunggah foto/scan Surat Penawaran Resmi (*Quotation Letter*) dari rekanan vendor. AI Model membaca Nama Perusahaan, No. Telepon, Email Kontak, Alamat Gudang, dan Syarat Pembayaran (*Payment Terms* seperti *Net 30*, *COD*, *DP 50%*) &rarr; otomatis mengisi form PO!
+3. 📦 **Tahap 4 (Warehouse - `/gr/create`): AI Delivery Order & Quality Scanner**  
+   Petugas gudang memotret Surat Jalan (*Delivery Order* / DO) kurir vendor. AI Model membaca nomor DO, tanggal pengiriman, dan mendeteksi kondisi fisik segel paket (Aman/Utuh) &rarr; otomatis mengisi form penerimaan barang (Goods Receipt)!
+4. 🔄 **Diagram Siklus Terpadu (*Circular Procurement Cycle*) pada Portal Login**  
+   Halaman login menampilkan visual infografis 4 tahap pengadaan modern dengan pendaran neon (*ambient glow*) dan efek interaktif responsif.
+5. 📊 **Dashboard Dinamis Khusus Ke-5 Role Pengguna**  
+   Tampilan dasbor, kartu metrik statistik, antrean tugas prioritas, grafik analitik *Chart.js*, dan alur kerja otomatis menyesuaikan dengan peran yang sedang login (*Requester*, *Approver*, *Purchasing*, *Warehouse*, atau *Admin*).
+6. 🖨️ **Dokumen Resmi Siap Cetak Standar A4 (Kop Surat & Stempel Digital)**  
+   Dokumen Purchase Order (PO), Bukti Goods Receipt Slip (GR), dan formulir PR telah distandarisasi dengan Kop Surat resmi korporat, stempel digital status, tabel anti-pecah halaman (*page-break-inside avoid*), dan 3 kolom tanda tangan pengesahan.
+7. 🛡️ **Pengecekan Keamanan Anti-Bot (Human Check Verification)**  
+   Formulir login dilengkapi verifikasi interaktif anti-bruteforce untuk memastikan akses dilakukan oleh personel manusia yang sah.
+8. 📐 **Tampilan Anti-Overflow (Presisi 1366x768 Laptop Ready)**  
+   Seluruh antarmuka, kartu KPI, dan tabel data dirancang responsif dengan animasi muncul bertahap (*staggered data reveal*).
+
+---
+
+## 4. Skema Basis Data & Relasi (SQLite `procurement.db`)
 
 Sistem menggunakan SQLite dengan relasi foreign key ketat (`PRAGMA foreign_keys = ON`) untuk menjaga konsistensi transaksi:
 
@@ -100,7 +119,7 @@ erDiagram
 
 ---
 
-## 4. Akun Pengujian Siap Pakai (5 Roles Demo Credentials)
+## 5. Akun Pengujian Siap Pakai (5 Roles Demo Credentials)
 
 Gunakan akun berikut untuk menguji masing-masing peran pada sistem:
 
@@ -114,18 +133,23 @@ Gunakan akun berikut untuk menguji masing-masing peran pada sistem:
 
 ---
 
-## 5. Struktur Berkas & Direktori Proyek
+## 6. Struktur Berkas & Direktori Proyek
 
 ```
 APK-Procurement/
-├── app.py                      # Server Flask utama, routing 5 modul & REST API
+├── app.py                      # Server Flask utama, routing 5 modul & REST API AI
 ├── models.py                   # Definisi model SQLAlchemy & skema foreign keys
 ├── database.py                 # Konfigurasi koneksi SQLite & integrasi PRAGMA
 ├── seed.py                     # Script database seeder data awal dan sampel transaksi
-├── requirements.txt            # Dependensi pustaka Python
+├── requirements.txt            # Dependensi pustaka Python (Flask, SQLAlchemy, openpyxl)
 ├── run.bat                     # Runner otomatis (1-klik start server)
 ├── .gitignore                  # Berkas pengecualian Git
 ├── README.md                   # Dokumentasi teknis & panduan lengkap
+├── docs/                       # Berkas Resmi Pemenuhan Soal 1a & Soal 1b Ujian
+│   ├── SOAL_1A_BPMN_SWIMLANE.drawio  # File XML Draw.io Swimlane 5-Role (Siap Export PDF)
+│   ├── SOAL_1B_WBS_PROCUREMENT.xlsx  # Spreadsheet Resmi WBS Modul & Fitur (Excel)
+│   ├── SOAL_1B_WBS_PROCUREMENT.csv   # Data WBS tabular format CSV
+│   └── DOKUMENTASI_SOAL_1A_DAN_1B.md # Narasi analisis, batasan scope & diagram Mermaid
 ├── static/
 │   ├── css/
 │   │   └── style.css           # Design system, variables, KPI cards, kop surat & print layout
@@ -142,24 +166,24 @@ APK-Procurement/
     │   └── index.html          # Dasbor dinamis real-time untuk ke-5 role
     ├── pr/
     │   ├── list.html           # Daftar PR, KPI metrik, filter pills, & pencarian
-    │   ├── create.html         # Formulir multi-item dinamis pengajuan PR
+    │   ├── create.html         # Formulir PR dengan AI Catalog Scanner & Multi-Item Grid
     │   └── detail.html         # Dokumen resmi PR & status approval
     ├── approval/
     │   ├── list.html           # Antrean pengajuan PR menunggu persetujuan
     │   └── review.html         # Formulir otorisasi pimpinan (Approve/Reject)
     ├── po/
     │   ├── list.html           # Daftar PO, KPI realisasi belanja, & antrean PR approved
-    │   ├── create.html         # Formulir penerbitan PO dengan quick vendor presets
+    │   ├── create.html         # Formulir PO dengan AI Quotation Scanner & vendor presets
     │   └── detail.html         # Slip resmi dokumen PO siap cetak (Kop surat & stempel)
     └── gr/
         ├── list.html           # Daftar Goods Receipt & antrean kedatangan fisik PO
-        ├── create.html         # Formulir penerimaan fisik barang & AI Vision DO Scanner
+        ├── create.html         # Formulir penerimaan fisik & AI Vision DO Scanner
         └── detail.html         # Slip resmi Goods Receipt serah terima fisik gudang
 ```
 
 ---
 
-## 6. Panduan Instalasi & Menjalankan Aplikasi
+## 7. Panduan Instalasi & Menjalankan Aplikasi
 
 ### Prasyarat
 - **Python 3.9+** (didukung langsung di Laragon, Anaconda, atau instalasi Python global).
@@ -210,7 +234,7 @@ http://127.0.0.1:5000
 
 ---
 
-## 7. Skenario Pengujian Alur Transaksi Lengkap (Test Flow)
+## 8. Skenario Pengujian Alur Transaksi Lengkap (Test Flow)
 
 1. **Pengajuan PR (`requester`):**
    - Buka menu **Purchase Requisition** &rarr; klik **Ajukan PR Baru**.

@@ -1,0 +1,180 @@
+<mxfile host="app.diagrams.net" modified="2026-10-22T05:15:00.000Z" agent="Antigravity Enterprise" version="21.0.0" type="device">
+  <diagram id="BPMN-Procurement-Lifecycle" name="BPMN Swimlane Procurement Lifecycle">
+    <mxGraphModel dx="1422" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- POOL UTAMA -->
+        <mxCell id="pool_procurement" value="SISTEM PENGADAAN BARANG &amp; JASA (PROCUREMENT LIFECYCLE) - SCOPE: REQUEST HINGGA FISIK GUDANG" style="swimlane;html=1;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=40;horizontal=0;horizontalFlip=0;fillColor=#1E3A8A;strokeColor=#0F172A;fontColor=#FFFFFF;fontStyle=1;fontSize=14;swimlaneLine=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1560" height="920" as="geometry" />
+        </mxCell>
+
+        <!-- SWIMLANE 1: REQUESTER -->
+        <mxCell id="lane_requester" value="REQUESTER&#xa;(Divisi Pemohon Barang/Jasa)" style="swimlane;html=1;startSize=40;horizontal=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#1E293B;fontStyle=1;fontSize=12;" vertex="1" parent="pool_procurement">
+          <mxGeometry x="40" y="0" width="1520" height="170" as="geometry" />
+        </mxCell>
+        
+        <!-- SWIMLANE 2: APPROVER -->
+        <mxCell id="lane_approver" value="APPROVER&#xa;(Kepala Divisi / Dept Head)" style="swimlane;html=1;startSize=40;horizontal=0;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontColor=#1E293B;fontStyle=1;fontSize=12;" vertex="1" parent="pool_procurement">
+          <mxGeometry x="40" y="170" width="1520" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- SWIMLANE 3: PURCHASING -->
+        <mxCell id="lane_purchasing" value="PURCHASING&#xa;(Procurement &amp; Sourcing)" style="swimlane;html=1;startSize=40;horizontal=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#1E293B;fontStyle=1;fontSize=12;" vertex="1" parent="pool_procurement">
+          <mxGeometry x="40" y="350" width="1520" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- SWIMLANE 4: VENDOR -->
+        <mxCell id="lane_vendor" value="VENDOR / REKANAN&#xa;(Eksternal Supplier)" style="swimlane;html=1;startSize=40;horizontal=0;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontColor=#1E293B;fontStyle=1;fontSize=12;" vertex="1" parent="pool_procurement">
+          <mxGeometry x="40" y="540" width="1520" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- SWIMLANE 5: WAREHOUSE -->
+        <mxCell id="lane_warehouse" value="WAREHOUSE &amp; LOGISTIK&#xa;(Gudang Penerima Barang)" style="swimlane;html=1;startSize=40;horizontal=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#1E293B;fontStyle=1;fontSize=12;" vertex="1" parent="pool_procurement">
+          <mxGeometry x="40" y="720" width="1520" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- ELEMEN-ELEMEN BPMN DALAM LANE REQUESTER -->
+        <mxCell id="start_req" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#10B981;strokeColor=#059669;strokeWidth=2;" vertex="1" parent="lane_requester">
+          <mxGeometry x="60" y="60" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_start" value="Mulai: Kebutuhan&#xa;Barang / Jasa Muncul" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#334155;" vertex="1" parent="lane_requester">
+          <mxGeometry x="30" y="105" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_req_input" value="Input Formulir PR Baru&#xa;(Multi-Item Dinamis +&#xa;AI Catalog Scanner)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontStyle=1;fontSize=11;" vertex="1" parent="lane_requester">
+          <mxGeometry x="150" y="50" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_req_submit" value="Submit &amp; Ajukan PR&#xa;ke Pimpinan Divisi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=1.5;fontColor=#1E3A8A;fontStyle=1;fontSize=11;" vertex="1" parent="lane_requester">
+          <mxGeometry x="340" y="50" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ELEMEN DALAM LANE APPROVER -->
+        <mxCell id="act_app_review" value="Tinjau Rincian PR,&#xa;Spesifikasi Teknis &amp;&#xa;Estimasi Anggaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontColor=#92400E;fontStyle=1;fontSize=11;" vertex="1" parent="lane_approver">
+          <mxGeometry x="340" y="60" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw_approval" value="Disetujui?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=1.5;fontColor=#92400E;fontStyle=1;fontSize=11;" vertex="1" parent="lane_approver">
+          <mxGeometry x="530" y="55" width="80" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_app_reject" value="Tolak PR &amp; Beri&#xa;Catatan Alasan&#xa;Penolakan Resmi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;strokeWidth=1.5;fontColor=#991B1B;fontStyle=1;fontSize=11;" vertex="1" parent="lane_approver">
+          <mxGeometry x="660" y="20" width="130" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="end_rejected" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#EF4444;strokeColor=#991B1B;strokeWidth=3;" vertex="1" parent="lane_approver">
+          <mxGeometry x="840" y="30" width="35" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_end_rej" value="Selesai: PR Ditolak" style="text;html=1;align=center;verticalAlign=top;fontSize=11;fontColor=#991B1B;" vertex="1" parent="lane_approver">
+          <mxGeometry x="810" y="70" width="95" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_app_approve" value="Setujui PR (Approve)&#xa;&amp; Teruskan ke Bagian&#xa;Purchasing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;strokeWidth=1.5;fontColor=#065F46;fontStyle=1;fontSize=11;" vertex="1" parent="lane_approver">
+          <mxGeometry x="660" y="100" width="140" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ELEMEN DALAM LANE PURCHASING -->
+        <mxCell id="act_pur_sourcing" value="Terima PR Approved &amp;&#xa;Pilih Rekanan / Scan Penawaran&#xa;(AI Quotation OCR)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;strokeWidth=1.5;fontColor=#3730A3;fontStyle=1;fontSize=11;" vertex="1" parent="lane_purchasing">
+          <mxGeometry x="655" y="60" width="160" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_pur_create_po" value="Terbitkan Dokumen PO,&#xa;Atur Payment Terms &amp;&#xa;Cetak PO Resmi (Kop &amp; Cap)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;strokeWidth=1.5;fontColor=#3730A3;fontStyle=1;fontSize=11;" vertex="1" parent="lane_purchasing">
+          <mxGeometry x="860" y="60" width="160" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- ELEMEN DALAM LANE VENDOR -->
+        <mxCell id="act_ven_receive_po" value="Terima Lembar PO Legal&#xa;&amp; Konfirmasi Jadwal&#xa;Pengiriman" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=1.5;fontColor=#581C87;fontStyle=1;fontSize=11;" vertex="1" parent="lane_vendor">
+          <mxGeometry x="865" y="55" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_ven_dispatch" value="Kemas Barang Fisik &amp;&#xa;Terbitkan Surat Jalan&#xa;(Delivery Order / DO)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#9333EA;strokeWidth=1.5;fontColor=#581C87;fontStyle=1;fontSize=11;" vertex="1" parent="lane_vendor">
+          <mxGeometry x="1060" y="55" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ELEMEN DALAM LANE WAREHOUSE -->
+        <mxCell id="act_wh_arrive" value="Armada Tiba di Gudang &amp;&#xa;Scan Surat Jalan Vendor via&#xa;AI Computer Vision DO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;strokeWidth=1.5;fontColor=#065F46;fontStyle=1;fontSize=11;" vertex="1" parent="lane_warehouse">
+          <mxGeometry x="1055" y="60" width="165" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_wh_inspect" value="Inspeksi Fisik Barang:&#xa;Kuantitas vs PO &amp;&#xa;Kondisi (Baik / Rusak)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;strokeWidth=1.5;fontColor=#065F46;fontStyle=1;fontSize=11;" vertex="1" parent="lane_warehouse">
+          <mxGeometry x="1260" y="60" width="145" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_wh_gr" value="Simpan Dokumen GR &amp;&#xa;Cetak Berita Acara&#xa;Goods Receipt Slip" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;strokeWidth=1.5;fontColor=#065F46;fontStyle=1;fontSize=11;" vertex="1" parent="lane_warehouse">
+          <mxGeometry x="1440" y="60" width="140" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="end_success" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#10B981;strokeColor=#065F46;strokeWidth=3;" vertex="1" parent="lane_warehouse">
+          <mxGeometry x="1615" y="73" width="38" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_end_ok" value="Selesai: Barang Sampai&#xa;&amp; Diterima di Gudang&#xa;(Scope Selesai)" style="text;html=1;align=center;verticalAlign=top;fontSize=11;fontColor=#065F46;fontStyle=1;" vertex="1" parent="lane_warehouse">
+          <mxGeometry x="1565" y="118" width="140" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- KONEKTOR SEQUENCE FLOW (ALUR PROSES) -->
+        <mxCell id="flow_1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=1.5;" edge="1" parent="1" source="start_req" target="act_req_input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=1.5;" edge="1" parent="1" source="act_req_input" target="act_req_submit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=1.5;" edge="1" parent="1" source="act_req_submit" target="act_app_review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D97706;strokeWidth=1.5;" edge="1" parent="1" source="act_app_review" target="gw_approval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_5_no" value="Tidak (Ditolak)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#DC2626;strokeWidth=1.5;fontColor=#DC2626;fontSize=10;" edge="1" parent="1" source="gw_approval" target="act_app_reject">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_5_rej_end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#DC2626;strokeWidth=1.5;" edge="1" parent="1" source="act_app_reject" target="end_rejected">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_5_yes" value="Ya (Disetujui)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.5;fontColor=#059669;fontSize=10;" edge="1" parent="1" source="gw_approval" target="act_app_approve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=1.5;" edge="1" parent="1" source="act_app_approve" target="act_pur_sourcing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#4F46E5;strokeWidth=1.5;" edge="1" parent="1" source="act_pur_sourcing" target="act_pur_create_po">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_8" value="Kirim PO Resmi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#4F46E5;strokeWidth=1.5;fontColor=#4F46E5;fontSize=10;" edge="1" parent="1" source="act_pur_create_po" target="act_ven_receive_po">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9333EA;strokeWidth=1.5;" edge="1" parent="1" source="act_ven_receive_po" target="act_ven_dispatch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_10" value="Kirim Armada &amp; Surat Jalan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9333EA;strokeWidth=1.5;fontColor=#9333EA;fontSize=10;" edge="1" parent="1" source="act_ven_dispatch" target="act_wh_arrive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=1.5;" edge="1" parent="1" source="act_wh_arrive" target="act_wh_inspect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=1.5;" edge="1" parent="1" source="act_wh_inspect" target="act_wh_gr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow_13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=1.5;" edge="1" parent="1" source="act_wh_gr" target="end_success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
